@@ -1,0 +1,9 @@
+<svg width="240" height="56" viewBox="0 0 240 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.5" y="0.5" width="239" height="55" rx="15.5" fill="white" fill-opacity="0.88"/>
+  <rect x="0.5" y="0.5" width="239" height="55" rx="15.5" stroke="#E7E7EA"/>
+  <circle cx="30" cy="28" r="13" fill="#00689D"/>
+  <path d="M22 26L30 20L38 26" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M24 26V35H36V26" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+  <text x="53" y="24" fill="#55565B" font-size="11" font-family="Arial, sans-serif" letter-spacing="2">PUBLIC</text>
+  <text x="53" y="39" fill="#111827" font-size="18" font-weight="700" font-family="Arial, sans-serif">Government Link</text>
+</svg>
