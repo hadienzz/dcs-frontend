@@ -13,13 +13,15 @@ const createProject = async (
     "/api/projects/create",
     formPayload,
   );
+
   const project = getProjectFromResponse(data);
 
   return {
     id: project.id,
     title: project.title,
     slug: project.slug ?? project.id,
-    partnerOrganizationName: project.partner_organization_name ?? "Mitra eksternal",
+    partnerOrganizationName:
+      project.partner_organization_name ?? "Mitra eksternal",
     status: project.status,
     createdAt: project.created_at,
     updatedAt: project.updated_at ?? null,

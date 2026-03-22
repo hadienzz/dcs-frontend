@@ -14,7 +14,11 @@ const useGetProjectDetail = (
   options?: UseGetProjectDetailOptions,
 ) => {
   return useQuery({
-    queryKey: [...SDG_DASHBOARD_PROJECT_DETAIL_QUERY_KEY, "internal", projectSlug],
+    queryKey: [
+      ...SDG_DASHBOARD_PROJECT_DETAIL_QUERY_KEY,
+      "internal",
+      projectSlug,
+    ],
     queryFn: () => getProjectDetail(projectSlug),
     enabled: Boolean(projectSlug) && options?.enabled !== false,
     refetchOnWindowFocus: false,

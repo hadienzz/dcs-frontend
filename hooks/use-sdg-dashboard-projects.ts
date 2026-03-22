@@ -13,10 +13,11 @@ import { SDG_DASHBOARD_PROJECTS_QUERY_KEY } from "@/types/internal";
 export function useSdgDashboardProjects() {
   const queryClient = useQueryClient();
   const { currentAccount, isHydrated } = useSdgDashboardAuth();
-  
+
   const internalProjectsQuery = useGetProjectsInternal({
     enabled: isHydrated && currentAccount?.role === "internal",
   });
+
   const externalProjectsQuery = useGetProjectsExternal({
     enabled: isHydrated && currentAccount?.role === "external",
   });
@@ -45,8 +46,11 @@ export function useSdgDashboardProject(projectSlug: string) {
   });
 
   const activeQuery =
-    currentAccount?.role === "external" ? externalProjectQuery : internalProjectQuery;
-  const isReady = isHydrated && (activeQuery.isFetched || !activeQuery.isPending);
+    currentAccount?.role === "external"
+      ? externalProjectQuery
+      : internalProjectQuery;
+  const isReady =
+    isHydrated && (activeQuery.isFetched || !activeQuery.isPending);
 
   return {
     project: activeQuery.data ?? null,

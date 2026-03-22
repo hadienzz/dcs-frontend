@@ -101,7 +101,10 @@ const useProgressForm = ({
     },
   });
 
-  const updateMonthlyReport = (reportId: string, patch: Partial<MonthlyReport>) => {
+  const updateMonthlyReport = (
+    reportId: string,
+    patch: Partial<MonthlyReport>,
+  ) => {
     formik.setFieldValue(
       "monthlyReports",
       formik.values.monthlyReports.map((report) =>

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins, Instrument_Serif } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { Providers } from "./providers";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -52,6 +53,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans">
         <Agentation />
+        <Toaster richColors />
         <Providers>{children}</Providers>
       </body>
     </html>

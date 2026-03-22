@@ -180,6 +180,10 @@ function triggerDownload(filename: string, href: string) {
   const link = document.createElement("a");
   link.href = href;
   link.download = filename;
+  if (/^https?:\/\//i.test(href)) {
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+  }
   link.click();
 }
 
@@ -201,11 +205,48 @@ export function readPdfFileAsDataUrl(file: File) {
   });
 }
 
+function readBlobAsDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error("PDF gagal dibaca."));
+    };
+
+    reader.onerror = () => reject(new Error("PDF gagal dibaca."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+export async function readPdfUrlAsDataUrl(url: string) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error("PDF proposal tidak bisa diunduh untuk dianalisis.");
+  }
+
+  return readBlobAsDataUrl(await response.blob());
+}
+
+function getPdfProposalSource(project: SdgDashboardProjectRecord) {
+  return project.proposalPdfDataUrl ?? project.proposalPdfUrl;
+}
+
 export function downloadProjectProposal(project: SdgDashboardProjectRecord) {
   const fallbackFilename = `${project.slug}-proposal.pdf`;
+  const pdfSource = getPdfProposalSource(project);
 
-  if (project.proposalMode === "pdf" && project.proposalPdfDataUrl) {
-    triggerDownload(project.proposalPdfName || fallbackFilename, project.proposalPdfDataUrl);
+  if (project.proposalMode === "pdf" && pdfSource) {
+    triggerDownload(project.proposalPdfName || fallbackFilename, pdfSource);
+    return;
+  }
+
+  if (project.proposalMode === "pdf") {
     return;
   }
 
@@ -218,7 +259,7 @@ export function downloadProjectProposal(project: SdgDashboardProjectRecord) {
 export function getProjectProposalDownloadLabel(
   project: SdgDashboardProjectRecord,
 ) {
-  if (project.proposalMode === "pdf" && project.proposalPdfDataUrl) {
+  if (project.proposalMode === "pdf" && getPdfProposalSource(project)) {
     return "Unduh PDF asli";
   }
 

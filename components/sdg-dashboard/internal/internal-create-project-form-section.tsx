@@ -9,8 +9,8 @@ import useCreateProject from "@/hooks/internal/use-create-project";
 
 export function InternalCreateProjectFormSection() {
   const router = useRouter();
-  const { formik, isPending } = useCreateProject();
-
+  const { formik, isPending, isSubmitting } = useCreateProject();
+  const disabled = isPending || isSubmitting;
   return (
     <PortalSection
       eyebrow="Form project"
@@ -80,9 +80,9 @@ export function InternalCreateProjectFormSection() {
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={disabled}>
             <FolderPlus data-icon="inline-start" />
-            {isPending ? "Menyimpan..." : "Buat project & buka detail"}
+            {disabled ? "Menyimpan..." : "Buat project & buka detail"}
           </Button>
           <Button
             type="button"

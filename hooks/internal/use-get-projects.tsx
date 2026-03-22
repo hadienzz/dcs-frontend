@@ -22,7 +22,7 @@ const useGetProjects = (options?: UseGetProjectsOptions) => {
     ],
     queryFn: () => getProjects(options?.status),
     enabled: options?.enabled,
-    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 

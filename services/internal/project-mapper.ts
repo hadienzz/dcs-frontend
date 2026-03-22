@@ -13,6 +13,7 @@ import type {
   BackendProgressReport,
   BackendProject,
   BackendProjectStage,
+  BackendStageDocument,
   BackendStageSubmission,
   BackendVisibilityScope,
 } from "@/types/internal";
@@ -214,6 +215,21 @@ function getInvitationCode(project: BackendProject) {
   );
 }
 
+function getLatestProposalDocument(submission: BackendStageSubmission | null) {
+  return submission?.documents[0] ?? null;
+}
+
+function deriveProposalMode(
+  submission: BackendStageSubmission | null,
+  document: BackendStageDocument | null,
+) {
+  if (submission?.proposal_content?.mode === "PDF" || document) {
+    return "pdf" as const;
+  }
+
+  return "form" as const;
+}
+
 export function mapApiProjectToDashboardProject(
   project: BackendProject,
 ): SdgDashboardProjectRecord {
@@ -226,6 +242,7 @@ export function mapApiProjectToDashboardProject(
   const latestBudgetSubmission = getLatestSubmission(budgetStage);
   const latestProgressSubmission = getLatestSubmission(progressStage);
   const proposalContent = latestProposalSubmission?.proposal_content;
+  const proposalDocument = getLatestProposalDocument(latestProposalSubmission);
   const proposalReviewMeta = getLatestReviewNote(proposalStage);
   const budgetItems = mapBudgetItems(latestBudgetSubmission?.budget_items ?? []);
   const monthlyReports = mapMonthlyReports(
@@ -242,7 +259,7 @@ export function mapApiProjectToDashboardProject(
     createdAt: project.created_at,
     updatedAt: project.updated_at ?? project.created_at,
     participants: mapParticipants(project),
-    proposalMode: "form",
+    proposalMode: deriveProposalMode(latestProposalSubmission, proposalDocument),
     proposalStatus: deriveProposalStatus(proposalStage),
     externalApprovalStatus: deriveExternalApprovalStatus(proposalStage),
     externalApprovalNote: proposalReviewMeta.note,
@@ -250,7 +267,8 @@ export function mapApiProjectToDashboardProject(
     timelineApprovalStatus: derivePartnerStageApprovalStatus(timelineStage),
     budgetApprovalStatus: derivePartnerStageApprovalStatus(budgetStage),
     progressApprovalStatus: derivePartnerStageApprovalStatus(progressStage),
-    proposalPdfName: null,
+    proposalPdfName: proposalDocument?.file_name ?? null,
+    proposalPdfUrl: proposalDocument?.file_url ?? null,
     proposalPdfDataUrl: null,
     proposalSdgGoals: normalizeSdgGoalNumbers(proposalContent?.sdg_goals),
     proposalSdgReasoning: proposalContent?.sdg_reasoning ?? "",

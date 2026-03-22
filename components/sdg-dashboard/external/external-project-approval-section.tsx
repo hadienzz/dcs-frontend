@@ -29,6 +29,8 @@ export function ExternalProjectApprovalSection({
   onDownloadProposal,
   proposalDownloadLabel,
 }: ExternalProjectApprovalSectionProps) {
+  const isPdfProposal = project.proposalMode === "pdf";
+
   return (
     <PortalSection
       eyebrow="Approval proposal"
@@ -43,33 +45,52 @@ export function ExternalProjectApprovalSection({
                 Ringkasan proposal
               </p>
               <h2 className="mt-2 text-xl font-semibold text-foreground">
-                {project.proposalFields.title}
+                {isPdfProposal ? project.name : project.proposalFields.title}
               </h2>
             </div>
             <Badge variant="outline" className="bg-background text-foreground">
-              {project.proposalMode === "pdf"
+              {isPdfProposal
                 ? "Proposal dikirim sebagai PDF"
                 : "Proposal dibuat dari form"}
             </Badge>
           </div>
 
           <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
-            {project.proposalFields.overview}
+            {isPdfProposal
+              ? "Tim internal membagikan proposal dalam format PDF final. Gunakan tombol unduh untuk meninjau dokumen lengkap sebelum memberi keputusan approval atau revisi."
+              : project.proposalFields.overview}
           </p>
 
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-[20px] border border-border/80 bg-background p-4">
-              <p className="text-xs font-medium text-muted-foreground">Tema</p>
-              <p className="mt-2 text-[15px] font-semibold text-foreground">
-                {project.proposalFields.theme}
-              </p>
-            </div>
-            <div className="rounded-[20px] border border-border/80 bg-background p-4">
-              <p className="text-xs font-medium text-muted-foreground">Skema</p>
-              <p className="mt-2 text-[15px] font-semibold text-foreground">
-                {project.proposalFields.scheme}
-              </p>
-            </div>
+            {isPdfProposal ? (
+              <div className="rounded-[20px] border border-border/80 bg-background p-4 lg:col-span-2">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Dokumen proposal
+                </p>
+                <p className="mt-2 text-[15px] font-semibold text-foreground">
+                  {project.proposalPdfName || "proposal.pdf"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Dokumen ini menjadi sumber utama peninjauan proposal pada portal
+                  mitra.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-[20px] border border-border/80 bg-background p-4">
+                  <p className="text-xs font-medium text-muted-foreground">Tema</p>
+                  <p className="mt-2 text-[15px] font-semibold text-foreground">
+                    {project.proposalFields.theme}
+                  </p>
+                </div>
+                <div className="rounded-[20px] border border-border/80 bg-background p-4">
+                  <p className="text-xs font-medium text-muted-foreground">Skema</p>
+                  <p className="mt-2 text-[15px] font-semibold text-foreground">
+                    {project.proposalFields.scheme}
+                  </p>
+                </div>
+              </>
+            )}
             <div className="rounded-[20px] border border-border/80 bg-background p-4 lg:col-span-2">
               <p className="text-xs font-medium text-muted-foreground">SDG terkait</p>
               <p className="mt-2 text-[15px] font-semibold text-foreground">
@@ -79,22 +100,26 @@ export function ExternalProjectApprovalSection({
                 Sumber pemetaan: {getProposalSdgSourceLabel(project.proposalSdgSource)}.
               </p>
             </div>
-            <div className="rounded-[20px] border border-border/80 bg-background p-4 lg:col-span-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                Output program
-              </p>
-              <p className="mt-2 text-[15px] leading-7 text-foreground">
-                {project.proposalFields.outputs}
-              </p>
-            </div>
-            <div className="rounded-[20px] border border-border/80 bg-background p-4 lg:col-span-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                Manfaat program
-              </p>
-              <p className="mt-2 text-[15px] leading-7 text-foreground">
-                {project.proposalFields.programBenefits}
-              </p>
-            </div>
+            {isPdfProposal ? null : (
+              <>
+                <div className="rounded-[20px] border border-border/80 bg-background p-4 lg:col-span-2">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Output program
+                  </p>
+                  <p className="mt-2 text-[15px] leading-7 text-foreground">
+                    {project.proposalFields.outputs}
+                  </p>
+                </div>
+                <div className="rounded-[20px] border border-border/80 bg-background p-4 lg:col-span-2">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Manfaat program
+                  </p>
+                  <p className="mt-2 text-[15px] leading-7 text-foreground">
+                    {project.proposalFields.programBenefits}
+                  </p>
+                </div>
+              </>
+            )}
             <div className="rounded-[20px] border border-border/80 bg-background p-4 lg:col-span-2">
               <p className="text-xs font-medium text-muted-foreground">
                 Alasan klasifikasi SDG

@@ -32,6 +32,7 @@ export type BackendStageKey =
   | "BUDGET_RAB"
   | "PROGRESS";
 export type BackendVisibilityScope = "INTERNAL" | "SHARED";
+export type BackendProposalSubmissionMode = "FORM" | "PDF";
 
 export interface CreateProjectFormValues {
   title: string;
@@ -81,7 +82,7 @@ export interface BackendProjectExternalMember {
 export interface BackendProposalContent {
   id: string;
   submission_id: string;
-  mode: "FORM";
+  mode: BackendProposalSubmissionMode;
   fields: Record<string, string>;
   sdg_goals: number[];
   sdg_reasoning?: string | null;
@@ -134,6 +135,15 @@ export interface BackendProgressReport {
   updated_at?: string | null;
 }
 
+export interface BackendStageDocument {
+  id: string;
+  file_name: string;
+  file_url: string;
+  mime_type: string;
+  visibility: "INTERNAL_ONLY" | "SHARED";
+  created_at: string;
+}
+
 export interface BackendStageReview {
   id: string;
   decision: BackendReviewDecision;
@@ -159,6 +169,7 @@ export interface BackendStageSubmission {
   timeline_items: BackendTimelineItem[];
   budget_items: BackendBudgetItem[];
   progress_reports: BackendProgressReport[];
+  documents: BackendStageDocument[];
   reviews: BackendStageReview[];
 }
 
@@ -214,11 +225,35 @@ export interface InternalProjectSummary {
 }
 
 export interface ProposalFormPayload {
+  mode: "form";
   fields: Record<string, string>;
   sdg_goals: number[];
   sdg_reasoning: string;
   sdg_source: string;
 }
+
+export interface UploadedProposalDocument {
+  name: string;
+  url: string;
+  mimeType?: string;
+  size?: number;
+  uploadedAt?: string;
+}
+
+export interface ProposalPdfPayload {
+  mode: "pdf";
+  document: {
+    file_name: string;
+    file_url: string;
+    mime_type?: string;
+    file_size?: number;
+  };
+  sdg_goals: number[];
+  sdg_reasoning: string;
+  sdg_source: string;
+}
+
+export type ProposalSubmissionPayload = ProposalFormPayload | ProposalPdfPayload;
 
 export interface TimelineFormPayload {
   items: Array<{
@@ -256,3 +291,7 @@ export interface ProgressFormPayload {
 export interface UpdateProjectStatusPayload {
   status: BackendProjectStatus;
 }
+
+export type BackendProposalDocumentUploadResponse = ApiResponse<{
+  document?: UploadedProposalDocument;
+}>;

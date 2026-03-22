@@ -64,7 +64,10 @@ const useLogin = (options?: UseLoginOptions) => {
         });
       } catch (error) {
         options?.onError?.(
-          getErrorMessage(error, "Login gagal. Pastikan email dan password benar."),
+          getErrorMessage(
+            error,
+            "Login gagal. Pastikan email dan password benar.",
+          ),
         );
       } finally {
         actions.setSubmitting(false);

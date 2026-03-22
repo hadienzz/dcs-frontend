@@ -5,9 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-import {
-  getInternalProjectPath,
-} from "@/components/sdg-dashboard/dashboard-data";
+import { getInternalProjectPath } from "@/components/sdg-dashboard/dashboard-data";
 import createProject from "@/services/internal/create-project";
 import {
   CreateProjectFormValues,
@@ -34,6 +32,13 @@ const useCreateProject = () => {
   const { isPending, mutateAsync } = useMutation({
     mutationFn: (payload: CreateProjectPayload) => createProject(payload),
     mutationKey: ["project", "create"],
+    onSuccess: (variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["sdg-dashboard", "projects"],
+      });
+
+      router.push(getInternalProjectPath(variables.slug));
+    },
   });
 
   const formik = useFormik<CreateProjectFormValues>({
@@ -49,12 +54,8 @@ const useCreateProject = () => {
           ...values,
           slug: generateSlug(values.title),
         };
-        const createdProject = await mutateAsync(payload);
-        await queryClient.invalidateQueries({
-          queryKey: ["sdg-dashboard", "projects"],
-        });
 
-        router.push(getInternalProjectPath(createdProject.slug));
+        await mutateAsync(payload);
       } catch (error) {
         actions.setStatus({
           submitError: getErrorMessage(
@@ -62,14 +63,13 @@ const useCreateProject = () => {
             "Project belum bisa dibuat. Coba lagi sebentar.",
           ),
         });
-      } finally {
-        actions.setSubmitting(false);
       }
     },
   });
 
   return {
     isPending,
+    isSubmitting: formik.isSubmitting,
     formik,
   };
 };

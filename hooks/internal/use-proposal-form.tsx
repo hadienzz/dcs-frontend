@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 
 import type {
   ProposalFields,
+  ProposalMode,
   SdgDashboardProjectRecord,
 } from "@/components/sdg-dashboard/dashboard-data";
 import { initialProposalFields } from "@/components/sdg-dashboard/dashboard-data";
@@ -16,9 +17,14 @@ import {
 } from "@/types/internal";
 import type { ProposalSdgSource } from "@/lib/sdg-goals";
 import { getErrorMessage } from "@/utils/api-error";
+import { toast } from "sonner";
 
 interface ProposalFormValues {
+  proposalMode: ProposalMode;
   proposalFields: ProposalFields;
+  proposalPdfName: string | null;
+  proposalPdfUrl: string | null;
+  proposalPdfDataUrl: string | null;
   proposalSdgGoals: number[];
   proposalSdgReasoning: string;
   proposalSdgSource: ProposalSdgSource;
@@ -45,19 +51,49 @@ const useProposalForm = ({
       [...SDG_DASHBOARD_PROJECT_DETAIL_QUERY_KEY, "internal", nextProject.slug],
       nextProject,
     );
+    queryClient.setQueryData(
+      [...SDG_DASHBOARD_PROJECT_DETAIL_QUERY_KEY, "external", nextProject.slug],
+      nextProject,
+    );
+    await queryClient.invalidateQueries({
+      queryKey: [
+        ...SDG_DASHBOARD_PROJECT_DETAIL_QUERY_KEY,
+        "internal",
+        nextProject.slug,
+      ],
+    });
+    await queryClient.invalidateQueries({
+      queryKey: [
+        ...SDG_DASHBOARD_PROJECT_DETAIL_QUERY_KEY,
+        "external",
+        nextProject.slug,
+      ],
+    });
     await queryClient.invalidateQueries({
       queryKey: SDG_DASHBOARD_PROJECTS_QUERY_KEY,
     });
   };
 
+  const buildProposalPayload = (values: ProposalFormValues) => {
+    if (!values.proposalPdfName || !values.proposalPdfUrl) {
+      throw new Error("Upload file PDF proposal terlebih dahulu.");
+    }
+
+    return {
+      mode: "pdf" as const,
+      document: {
+        file_name: values.proposalPdfName,
+        file_url: values.proposalPdfUrl,
+      },
+      sdg_goals: values.proposalSdgGoals,
+      sdg_reasoning: values.proposalSdgReasoning,
+      sdg_source: values.proposalSdgSource ?? "manual",
+    };
+  };
+
   const saveDraftMutation = useMutation({
     mutationFn: (values: ProposalFormValues) =>
-      saveProposalDraft(projectSlug, {
-        fields: values.proposalFields as unknown as Record<string, string>,
-        sdg_goals: values.proposalSdgGoals,
-        sdg_reasoning: values.proposalSdgReasoning,
-        sdg_source: values.proposalSdgSource ?? "manual",
-      }),
+      saveProposalDraft(projectSlug, buildProposalPayload(values)),
     onSuccess: async (nextProject) => {
       await syncProjectCache(nextProject);
       onDraftSuccess?.(nextProject);
@@ -66,22 +102,24 @@ const useProposalForm = ({
 
   const submitMutation = useMutation({
     mutationFn: (values: ProposalFormValues) =>
-      submitProposal(projectSlug, {
-        fields: values.proposalFields as unknown as Record<string, string>,
-        sdg_goals: values.proposalSdgGoals,
-        sdg_reasoning: values.proposalSdgReasoning,
-        sdg_source: values.proposalSdgSource ?? "manual",
-      }),
+      submitProposal(projectSlug, buildProposalPayload(values)),
     onSuccess: async (nextProject) => {
       await syncProjectCache(nextProject);
       onSubmitSuccess?.(nextProject);
+    },
+    onError: () => {
+      toast.error("Internal Server Error");
     },
   });
 
   const formik = useFormik<ProposalFormValues>({
     enableReinitialize: true,
     initialValues: {
+      proposalMode: "pdf",
       proposalFields: project?.proposalFields ?? initialProposalFields,
+      proposalPdfName: project?.proposalPdfName ?? null,
+      proposalPdfUrl: project?.proposalPdfUrl ?? null,
+      proposalPdfDataUrl: project?.proposalPdfDataUrl ?? null,
       proposalSdgGoals: project?.proposalSdgGoals ?? [],
       proposalSdgReasoning: project?.proposalSdgReasoning ?? "",
       proposalSdgSource: project?.proposalSdgSource ?? "manual",
@@ -123,9 +161,28 @@ const useProposalForm = ({
     }
   };
 
+  const submitWithValues = async (values: ProposalFormValues) => {
+    formik.setStatus(undefined);
+
+    try {
+      await submitMutation.mutateAsync(values);
+    } catch (error) {
+      const message = getErrorMessage(
+        error,
+        "Proposal belum bisa dikirim. Coba lagi sebentar.",
+      );
+      formik.setStatus({
+        submitError: message,
+      });
+      onError?.(message);
+      throw error;
+    }
+  };
+
   return {
     formik,
     saveDraft,
+    submitWithValues,
     isSavingDraft: saveDraftMutation.isPending,
     isSubmitting: submitMutation.isPending,
   };

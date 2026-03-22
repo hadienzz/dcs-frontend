@@ -107,6 +107,7 @@ export interface SdgDashboardProjectRecord {
   budgetApprovalStatus: PartnerStageApprovalStatus;
   progressApprovalStatus: PartnerStageApprovalStatus;
   proposalPdfName: string | null;
+  proposalPdfUrl: string | null;
   proposalPdfDataUrl: string | null;
   proposalSdgGoals: number[];
   proposalSdgReasoning: string;
@@ -142,6 +143,7 @@ interface CreateSeedProjectInput extends CreateProjectRecordInput {
   budgetApprovalStatus?: PartnerStageApprovalStatus;
   progressApprovalStatus?: PartnerStageApprovalStatus;
   proposalPdfName?: string | null;
+  proposalPdfUrl?: string | null;
   proposalPdfDataUrl?: string | null;
   proposalSdgGoals?: number[];
   proposalSdgReasoning?: string;
@@ -644,7 +646,7 @@ export function normalizeProjectRecord(
             joinedAt: participant.joinedAt ?? null,
           }))
         : createDefaultParticipants(externalName),
-    proposalMode: rawProject.proposalMode === "pdf" ? "pdf" : "form",
+    proposalMode: rawProject.proposalMode === "form" ? "form" : "pdf",
     proposalStatus,
     externalApprovalStatus,
     externalApprovalNote: rawProject.externalApprovalNote ?? "",
@@ -653,6 +655,7 @@ export function normalizeProjectRecord(
     budgetApprovalStatus,
     progressApprovalStatus,
     proposalPdfName: rawProject.proposalPdfName ?? null,
+    proposalPdfUrl: rawProject.proposalPdfUrl ?? null,
     proposalPdfDataUrl: rawProject.proposalPdfDataUrl ?? null,
     proposalSdgGoals: normalizeSdgGoalNumbers(rawProject.proposalSdgGoals),
     proposalSdgReasoning: rawProject.proposalSdgReasoning?.trim() ?? "",
@@ -691,7 +694,7 @@ export function createProjectRecord(
     createdAt: now,
     updatedAt: now,
     participants: createDefaultParticipants(input.externalName),
-    proposalMode: "form",
+    proposalMode: "pdf",
     proposalStatus: "draft",
     externalApprovalStatus: "not_sent",
     externalApprovalNote: "",
@@ -700,6 +703,7 @@ export function createProjectRecord(
     budgetApprovalStatus: "pending",
     progressApprovalStatus: "pending",
     proposalPdfName: null,
+    proposalPdfUrl: null,
     proposalPdfDataUrl: null,
     proposalSdgGoals: [],
     proposalSdgReasoning: "",
@@ -741,6 +745,7 @@ function createSeedProject(
       progressApprovalStatus:
         input.progressApprovalStatus ?? project.progressApprovalStatus,
       proposalPdfName: input.proposalPdfName ?? project.proposalPdfName,
+      proposalPdfUrl: input.proposalPdfUrl ?? project.proposalPdfUrl,
       proposalPdfDataUrl: input.proposalPdfDataUrl ?? project.proposalPdfDataUrl,
       proposalSdgGoals: input.proposalSdgGoals ?? project.proposalSdgGoals,
       proposalSdgReasoning:

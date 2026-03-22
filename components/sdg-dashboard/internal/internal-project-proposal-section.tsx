@@ -3,12 +3,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { FileText, LoaderCircle, Sparkles, Upload } from "lucide-react";
 
 import type {
-  ProposalFields,
   SdgDashboardProjectRecord,
-} from "@/components/sdg-dashboard/dashboard-data";
-import {
-  proposalSchemeOptions,
-  proposalThemeOptions,
 } from "@/components/sdg-dashboard/dashboard-data";
 import { ExternalApprovalBadge } from "@/components/sdg-dashboard/external-approval-badge";
 import { getExternalPortalPath } from "@/components/sdg-dashboard/dashboard-data";
@@ -17,8 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   FieldBlock,
-  fieldClassName,
-  Input,
   Textarea,
 } from "@/components/sdg-dashboard/internal/internal-form-primitives";
 import { InternalStageNotice } from "@/components/sdg-dashboard/internal/internal-stage-notice";
@@ -30,12 +23,8 @@ import {
 
 interface InternalProjectProposalSectionProps {
   project: SdgDashboardProjectRecord;
-  onProposalModeChange: (mode: "form" | "pdf") => void;
-  onProposalFieldChange: <K extends keyof ProposalFields>(
-    key: K,
-    value: ProposalFields[K],
-  ) => void;
   onProposalPdfUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+  isUploadingProposalPdf: boolean;
   onProposalSdgGoalToggle: (goal: number) => void;
   onProposalSdgReasoningChange: (value: string) => void;
   onGenerateProposalSdgWithAi: () => void;
@@ -48,9 +37,8 @@ interface InternalProjectProposalSectionProps {
 
 export function InternalProjectProposalSection({
   project,
-  onProposalModeChange,
-  onProposalFieldChange,
   onProposalPdfUpload,
+  isUploadingProposalPdf,
   onProposalSdgGoalToggle,
   onProposalSdgReasoningChange,
   onGenerateProposalSdgWithAi,
@@ -63,13 +51,14 @@ export function InternalProjectProposalSection({
   const pdfFileName = project.proposalPdfName || `${project.slug}-proposal.pdf`;
   const selectedSdgGoalsLabel = formatSdgGoalList(project.proposalSdgGoals);
   const proposalSdgSourceLabel = getProposalSdgSourceLabel(project.proposalSdgSource);
+  const hasProposalDownload = Boolean(project.proposalPdfDataUrl || project.proposalPdfUrl);
+  const isPdfModeWithoutDocument = !project.proposalPdfName;
+  const isPdfDraftDisabled = !project.proposalPdfUrl;
   const aiButtonTitle = isGeneratingProposalSdg
     ? "AI sedang menganalisis proposal"
-    : project.proposalMode === "pdf"
-      ? project.proposalPdfDataUrl
-        ? "Analisis SDG dari PDF dengan AI"
-        : "Upload PDF untuk analisis AI"
-      : "Analisis SDG dari form dengan AI";
+    : project.proposalPdfDataUrl || project.proposalPdfUrl
+      ? "Analisis SDG dari PDF dengan AI"
+      : "Upload PDF untuk analisis AI";
   const aiButtonCtaLabel = isGeneratingProposalSdg
     ? "Menganalisis..."
     : "Analisis sekarang";
@@ -77,8 +66,8 @@ export function InternalProjectProposalSection({
   return (
     <PortalSection
       eyebrow="Step 1"
-      title="Susun proposal dan kirim ke mitra"
-      description="Proposal disusun lewat form dan langsung dikirim ke mitra dari workspace ini. Mode PDF belum dipakai pada tahap backend dinamis saat ini."
+      title="Upload proposal PDF dan kirim ke mitra"
+      description="Tahap proposal memakai file PDF sebagai sumber utama. Upload dokumen final, validasi SDG, lalu kirim ke mitra dari workspace yang sama."
       action={<ExternalApprovalBadge status={project.externalApprovalStatus} />}
     >
       <form className="space-y-6" onSubmit={onSubmit}>
@@ -88,9 +77,7 @@ export function InternalProjectProposalSection({
               Format proposal yang dibagikan
             </p>
             <p className="mt-2 text-[15px] leading-7 text-muted-foreground">
-              {project.proposalMode === "pdf"
-                ? "Mitra akan menerima file PDF yang diunggah langsung dari workspace SDGs."
-                : "Mitra akan menerima proposal yang digenerasikan dari form yang kamu isi di dashboard ini."}
+              Mitra akan menerima file PDF yang diunggah langsung dari workspace SDGs.
             </p>
           </div>
           <div className="rounded-2xl border border-border/80 bg-background p-5">
@@ -109,38 +96,6 @@ export function InternalProjectProposalSection({
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => onProposalModeChange("form")}
-            className={
-              project.proposalMode === "form"
-                ? "rounded-2xl border border-primary bg-primary/8 px-5 py-5 text-left"
-                : "rounded-2xl border border-border/80 bg-background px-5 py-5 text-left transition-colors hover:bg-muted/10"
-            }
-          >
-            <p className="text-sm font-semibold text-foreground">Isi form proposal</p>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Cocok jika tim ingin mengedit detail proposal langsung dari dashboard.
-            </p>
-          </button>
-          <button
-            type="button"
-            onClick={() => onProposalModeChange("pdf")}
-            disabled
-            className={
-              project.proposalMode === "pdf"
-                ? "rounded-2xl border border-primary/25 bg-primary/8 px-5 py-5 text-left opacity-60"
-                : "rounded-2xl border border-border/80 bg-background px-5 py-5 text-left opacity-60"
-            }
-          >
-            <p className="text-sm font-semibold text-foreground">Upload PDF proposal</p>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Mode ini belum dipakai pada integrasi backend saat ini.
-            </p>
-          </button>
-        </div>
-
         {project.externalApprovalStatus === "revision_requested" ? (
           <InternalStageNotice
             title="Mitra meminta revisi proposal"
@@ -151,11 +106,10 @@ export function InternalProjectProposalSection({
           />
         ) : null}
 
-        {project.proposalMode === "pdf" ? (
-          <div
-            key="proposal-pdf-mode"
-            className="space-y-4 rounded-[24px] border border-border/80 bg-background p-5 sm:p-6"
-          >
+        <div
+          key="proposal-pdf-mode"
+          className="space-y-4 rounded-[24px] border border-border/80 bg-background p-5 sm:p-6"
+        >
             <div>
               <h3 className="text-base font-semibold text-foreground">
                 Upload proposal PDF
@@ -180,15 +134,28 @@ export function InternalProjectProposalSection({
                       {project.proposalPdfName ? "Ganti file PDF" : "Pilih file PDF"}
                     </p>
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      {project.proposalPdfName
-                        ? "Upload baru akan menggantikan file yang aktif sekarang."
-                        : "Hanya format PDF yang diterima."}
+                      {isUploadingProposalPdf
+                        ? "Dokumen sedang diunggah ke server."
+                        : project.proposalPdfName && !project.proposalPdfUrl
+                          ? "File dipilih dan akan diunggah saat klik Kirim ke mitra."
+                          : project.proposalPdfName
+                            ? "Upload baru akan menggantikan file yang aktif sekarang."
+                            : "Hanya format PDF yang diterima."}
                     </p>
                   </div>
                 </div>
 
                 <span className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground">
-                  {project.proposalPdfName ? "Upload ulang" : "Pilih file"}
+                  {isUploadingProposalPdf ? (
+                    <>
+                      <LoaderCircle className="mr-2 size-4 animate-spin" />
+                      Mengunggah...
+                    </>
+                  ) : project.proposalPdfName ? (
+                    "Upload ulang"
+                  ) : (
+                    "Pilih file"
+                  )}
                 </span>
               </div>
             </label>
@@ -198,6 +165,7 @@ export function InternalProjectProposalSection({
               type="file"
               accept="application/pdf"
               className="sr-only"
+              disabled={isUploadingProposalPdf}
               onChange={onProposalPdfUpload}
             />
 
@@ -208,113 +176,27 @@ export function InternalProjectProposalSection({
                   {project.proposalPdfName ?? "Belum ada file PDF yang diunggah"}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  {project.proposalPdfName
+                  {project.proposalPdfName && !project.proposalPdfUrl
+                    ? "File siap dikirim dan akan diupload ke backend saat klik Kirim ke mitra."
+                    : project.proposalPdfName
                     ? "Dokumen ini akan muncul di portal mitra saat proposal dikirim."
                     : "Upload proposal final terlebih dahulu sebelum kirim ke mitra."}
                 </p>
               </div>
 
               {project.proposalPdfName ? (
-                <Button type="button" variant="outline" onClick={onDownload}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!hasProposalDownload}
+                  onClick={onDownload}
+                >
                   <FileText data-icon="inline-start" />
                   Lihat file
                 </Button>
               ) : null}
             </div>
           </div>
-        ) : (
-          <div key="proposal-form-mode" className="grid gap-5 lg:grid-cols-2">
-            <FieldBlock htmlFor="proposal-title" label="Judul program">
-              <Input
-                id="proposal-title"
-                value={project.proposalFields.title}
-                onChange={(event) =>
-                  onProposalFieldChange("title", event.target.value)
-                }
-              />
-            </FieldBlock>
-            <FieldBlock htmlFor="proposal-location" label="Lokasi program">
-              <Input
-                id="proposal-location"
-                value={project.proposalFields.location}
-                onChange={(event) =>
-                  onProposalFieldChange("location", event.target.value)
-                }
-              />
-            </FieldBlock>
-            <FieldBlock htmlFor="proposal-theme" label="Tema program">
-              <select
-                id="proposal-theme"
-                className={fieldClassName()}
-                value={project.proposalFields.theme}
-                onChange={(event) =>
-                  onProposalFieldChange("theme", event.target.value)
-                }
-              >
-                {proposalThemeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </FieldBlock>
-            <FieldBlock htmlFor="proposal-scheme" label="Skema kolaborasi">
-              <select
-                id="proposal-scheme"
-                className={fieldClassName()}
-                value={project.proposalFields.scheme}
-                onChange={(event) =>
-                  onProposalFieldChange("scheme", event.target.value)
-                }
-              >
-                {proposalSchemeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </FieldBlock>
-            <FieldBlock
-              htmlFor="proposal-overview"
-              label="Gambaran umum"
-              className="lg:col-span-2"
-            >
-              <Textarea
-                id="proposal-overview"
-                value={project.proposalFields.overview}
-                onChange={(event) =>
-                  onProposalFieldChange("overview", event.target.value)
-                }
-              />
-            </FieldBlock>
-            <FieldBlock
-              htmlFor="proposal-benefits"
-              label="Manfaat program"
-              className="lg:col-span-2"
-            >
-              <Textarea
-                id="proposal-benefits"
-                value={project.proposalFields.programBenefits}
-                onChange={(event) =>
-                  onProposalFieldChange("programBenefits", event.target.value)
-                }
-              />
-            </FieldBlock>
-            <FieldBlock
-              htmlFor="proposal-outputs"
-              label="Output yang diharapkan"
-              className="lg:col-span-2"
-            >
-              <Textarea
-                id="proposal-outputs"
-                value={project.proposalFields.outputs}
-                onChange={(event) =>
-                  onProposalFieldChange("outputs", event.target.value)
-                }
-              />
-            </FieldBlock>
-          </div>
-        )}
 
         <div className="space-y-5 rounded-[24px] border border-border/80 bg-background p-5 sm:p-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -323,9 +205,7 @@ export function InternalProjectProposalSection({
                 Pemetaan SDG proposal
               </h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                {project.proposalMode === "pdf"
-                  ? "Pilih SDG secara manual atau minta AI membaca isi PDF proposal."
-                  : "Pilih SDG secara manual atau minta AI membaca isi form proposal."}
+                Pilih SDG secara manual atau minta AI membaca isi PDF proposal.
               </p>
             </div>
 
@@ -336,7 +216,7 @@ export function InternalProjectProposalSection({
                 onClick={onGenerateProposalSdgWithAi}
                 disabled={
                   isGeneratingProposalSdg ||
-                  (project.proposalMode === "pdf" && !project.proposalPdfDataUrl)
+                  (!project.proposalPdfDataUrl && !project.proposalPdfUrl)
                 }
                 className="h-auto w-full items-center justify-between gap-3 whitespace-normal rounded-[20px] border-primary/15 bg-[linear-gradient(180deg,rgba(182,37,42,0.05),rgba(182,37,42,0.015))] px-4 py-3 text-left shadow-none hover:border-primary/25 hover:bg-[linear-gradient(180deg,rgba(182,37,42,0.08),rgba(182,37,42,0.03))]"
               >
@@ -405,21 +285,32 @@ export function InternalProjectProposalSection({
               onChange={(event) =>
                 onProposalSdgReasoningChange(event.target.value)
               }
-              placeholder={
-                project.proposalMode === "pdf"
-                  ? "Jelaskan kenapa isi PDF ini masuk ke SDG tertentu."
-                  : "Jelaskan kenapa isi proposal ini masuk ke SDG tertentu."
-              }
+              placeholder="Jelaskan kenapa isi PDF ini masuk ke SDG tertentu."
             />
           </FieldBlock>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button type="submit">Kirim ke mitra</Button>
-          <Button type="button" variant="outline" onClick={onSaveDraft}>
+          <Button
+            type="submit"
+            disabled={isUploadingProposalPdf || isPdfModeWithoutDocument}
+          >
+            Kirim ke mitra
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isUploadingProposalPdf || isPdfModeWithoutDocument || isPdfDraftDisabled}
+            onClick={onSaveDraft}
+          >
             Simpan draft
           </Button>
-          <Button type="button" variant="outline" onClick={onDownload}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!hasProposalDownload}
+            onClick={onDownload}
+          >
             <FileText data-icon="inline-start" />
             {downloadLabel}
           </Button>

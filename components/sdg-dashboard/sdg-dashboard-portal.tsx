@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { FormEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import {
   useMemo,
   useState,
@@ -21,7 +21,6 @@ import {
   getProjectReportUploadCount,
   getProjectWorkflowProgress,
   type DashboardTabId,
-  type ProposalFields,
   type SdgDashboardProjectRecord,
 } from "@/components/sdg-dashboard/dashboard-data";
 import { formatCurrency } from "@/components/sdg-dashboard/dashboard-formatters";
@@ -50,9 +49,14 @@ import { useSdgDashboardProject } from "@/hooks/use-sdg-dashboard-projects";
 import {
   downloadProjectProposal,
   getProjectProposalDownloadLabel,
+  readPdfFileAsDataUrl,
+  readPdfUrlAsDataUrl,
 } from "@/lib/sdg-dashboard-documents";
-import { analyzeFormProposalSdg } from "@/lib/sdg-dashboard-proposal-ai";
+import {
+  analyzePdfProposalSdg,
+} from "@/lib/sdg-dashboard-proposal-ai";
 import { formatSdgGoalList, normalizeSdgGoalNumbers } from "@/lib/sdg-goals";
+import uploadProposalDocument from "@/services/internal/upload-proposal-document";
 
 interface SdgDashboardPortalProps {
   projectSlug: string;
@@ -141,7 +145,11 @@ function LoadingState() {
 function getProposalPreview(
   project: SdgDashboardProjectRecord,
   values: {
-    proposalFields: ProposalFields;
+    proposalMode: "form" | "pdf";
+    proposalFields: SdgDashboardProjectRecord["proposalFields"];
+    proposalPdfName: string | null;
+    proposalPdfUrl: string | null;
+    proposalPdfDataUrl: string | null;
     proposalSdgGoals: number[];
     proposalSdgReasoning: string;
     proposalSdgSource: "manual" | "ai" | null;
@@ -149,13 +157,14 @@ function getProposalPreview(
 ) {
   return {
     ...project,
-    proposalMode: "form" as const,
+    proposalMode: values.proposalMode,
     proposalFields: values.proposalFields,
     proposalSdgGoals: values.proposalSdgGoals,
     proposalSdgReasoning: values.proposalSdgReasoning,
     proposalSdgSource: values.proposalSdgSource,
-    proposalPdfName: null,
-    proposalPdfDataUrl: null,
+    proposalPdfName: values.proposalPdfName,
+    proposalPdfUrl: values.proposalPdfUrl,
+    proposalPdfDataUrl: values.proposalPdfDataUrl,
   };
 }
 
@@ -172,6 +181,10 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
     tone: "neutral",
   });
   const [isGeneratingProposalSdg, setIsGeneratingProposalSdg] = useState(false);
+  const [isUploadingProposalPdf, setIsUploadingProposalPdf] = useState(false);
+  const [pendingProposalPdfFile, setPendingProposalPdfFile] = useState<File | null>(
+    null,
+  );
   const regenerateInvitationCodeMutation = useRegenerateInvitationCode(projectSlug);
   const updateProjectStatusMutation = useUpdateProjectStatus(projectSlug);
 
@@ -339,11 +352,19 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
     setIsGeneratingProposalSdg(true);
 
     try {
-      const result = await analyzeFormProposalSdg({
-        projectName: currentProject.name,
-        externalName: currentProject.externalName,
-        proposalFields: proposalForm.formik.values.proposalFields,
-      });
+      const result =
+        await analyzePdfProposalSdg({
+          fileName:
+            proposalForm.formik.values.proposalPdfName ||
+            `${currentProject.slug}-proposal.pdf`,
+          pdfDataUrl:
+            proposalForm.formik.values.proposalPdfDataUrl ||
+            (proposalForm.formik.values.proposalPdfUrl
+              ? await readPdfUrlAsDataUrl(
+                  proposalForm.formik.values.proposalPdfUrl,
+                )
+              : ""),
+        });
 
       proposalForm.formik.setFieldValue(
         "proposalSdgGoals",
@@ -436,13 +457,6 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
     }
   }
 
-  function updateProposalField<K extends keyof ProposalFields>(
-    key: K,
-    value: ProposalFields[K],
-  ) {
-    proposalForm.formik.setFieldValue(`proposalFields.${key}`, value);
-  }
-
   function toggleProposalSdgGoal(goal: number) {
     const nextGoals = proposalForm.formik.values.proposalSdgGoals.includes(goal)
       ? proposalForm.formik.values.proposalSdgGoals.filter((item) => item !== goal)
@@ -460,28 +474,105 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
     proposalForm.formik.setFieldValue("proposalSdgSource", "manual");
   }
 
-  function handleProposalModeChange(mode: "form" | "pdf") {
-    if (mode === "pdf") {
+  async function handleProposalPdfUpload(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (file.type !== "application/pdf") {
       setNotice({
-        title: "Mode PDF belum dipakai",
-        body: "Integrasi backend dinamis saat ini memakai proposal berbasis form agar tetap konsisten dengan schema stage yang baru.",
+        title: "Format file belum sesuai",
+        body: "Proposal PDF hanya menerima file dengan format PDF.",
         tone: "warning",
       });
       return;
     }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setNotice({
+        title: "Ukuran file terlalu besar",
+        body: "Ukuran proposal PDF maksimal 10MB.",
+        tone: "warning",
+      });
+      return;
+    }
+
+    setIsUploadingProposalPdf(true);
+
+    try {
+      const pdfDataUrl = await readPdfFileAsDataUrl(file);
+
+      proposalForm.formik.setFieldValue("proposalPdfName", file.name);
+      proposalForm.formik.setFieldValue("proposalPdfUrl", null);
+      proposalForm.formik.setFieldValue("proposalPdfDataUrl", pdfDataUrl);
+      setPendingProposalPdfFile(file);
+
+      setNotice({
+        title: "File PDF siap dikirim",
+        body: "Dokumen akan diunggah ke backend saat kamu klik Kirim ke mitra.",
+        tone: "success",
+      });
+    } catch (error) {
+      setNotice({
+        title: "Upload proposal PDF gagal",
+        body:
+          error instanceof Error
+            ? error.message
+            : "Coba lagi sebentar untuk mengunggah file proposal.",
+        tone: "warning",
+      });
+    } finally {
+      setIsUploadingProposalPdf(false);
+    }
   }
 
-  function handleProposalPdfUpload() {
-    setNotice({
-      title: "Upload PDF dinonaktifkan",
-      body: "Proposal dinamis saat ini dikirim lewat form dan belum memakai upload PDF.",
-      tone: "warning",
-    });
-  }
-
-  function handleProposalSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleProposalSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    proposalForm.formik.submitForm();
+
+    let submissionValues = proposalForm.formik.values;
+
+    if (pendingProposalPdfFile) {
+      setIsUploadingProposalPdf(true);
+
+      try {
+        const uploadedDocument = await uploadProposalDocument(
+          projectSlug,
+          pendingProposalPdfFile,
+        );
+
+        submissionValues = {
+          ...submissionValues,
+          proposalPdfName: uploadedDocument.name,
+          proposalPdfUrl: uploadedDocument.url,
+        };
+        await proposalForm.formik.setValues(submissionValues);
+        setPendingProposalPdfFile(null);
+      } catch (error) {
+        
+        setNotice({
+          title: "Upload proposal PDF gagal",
+          body:
+            error instanceof Error
+              ? error.message
+              : "Coba lagi sebentar untuk mengunggah file proposal.",
+          tone: "warning",
+        });
+        return;
+      } finally {
+        setIsUploadingProposalPdf(false);
+      }
+    }
+
+    try {
+      await proposalForm.submitWithValues(submissionValues);
+    } catch {
+      return;
+    }
   }
 
   function handleTimelineSave(event: FormEvent<HTMLFormElement>) {
@@ -556,9 +647,8 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
               <TabsContent value="proposal">
                 <InternalProjectProposalSection
                   project={proposalPreview}
-                  onProposalModeChange={handleProposalModeChange}
-                  onProposalFieldChange={updateProposalField}
                   onProposalPdfUpload={handleProposalPdfUpload}
+                  isUploadingProposalPdf={isUploadingProposalPdf}
                   onProposalSdgGoalToggle={toggleProposalSdgGoal}
                   onProposalSdgReasoningChange={updateProposalSdgReasoning}
                   onGenerateProposalSdgWithAi={generateProposalSdgWithAi}
