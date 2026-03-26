@@ -7,6 +7,11 @@ const FloatingVoiceOver = dynamic(() => import("./voice-over"), {
   loading: () => null,
 });
 
+const FloatingChatbot = dynamic(() => import("./floating-chatbot"), {
+  ssr: false,
+  loading: () => null,
+});
+
 const Widget = dynamic(() => import("./widget"), {
   ssr: false,
   loading: () => null,
@@ -17,12 +22,12 @@ export default function ClientOnlyWidgets() {
     typeof navigator !== "undefined" &&
     (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
-  // Skip potentially heavy widgets on iOS to avoid Safari crashes
-  if (isIOS) return null;
+
   return (
     <>
-      <FloatingVoiceOver />
-      <Widget />
+      {!isIOS ? <FloatingVoiceOver /> : null}
+      <FloatingChatbot />
+      {!isIOS ? <Widget /> : null}
     </>
   );
 }

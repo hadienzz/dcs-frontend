@@ -4,55 +4,80 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   Building2,
-  FlaskConical,
+  ClipboardCheck,
+  FileSpreadsheet,
   Handshake,
-  Lightbulb,
-  Rocket,
-  Search,
-  Users,
+  HeartPulse,
+  Leaf,
+  School,
+  WalletCards,
 } from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 
-const HUB_CONTENTS = [
-  { label: "01", name: "Riset Dosen", color: "#C5192D" },
-  { label: "02", name: "Project Mitra", color: "#A21942" },
-  { label: "03", name: "Ide Mahasiswa", color: "#FD6925" },
-  { label: "04", name: "Sistem Vote", color: "#FD9D24" },
+const CSR_PILLARS = [
+  {
+    label: "01",
+    name: "Pendidikan & Literasi",
+    detail: "Program beasiswa, literasi digital, dan penguatan kapasitas belajar.",
+    color: "#C5192D",
+    icon: School,
+  },
+  {
+    label: "02",
+    name: "Ekonomi Komunitas",
+    detail: "Pendampingan UMKM, inkubasi usaha, dan penguatan rantai nilai lokal.",
+    color: "#FD6925",
+    icon: WalletCards,
+  },
+  {
+    label: "03",
+    name: "Lingkungan Berkelanjutan",
+    detail: "Pengelolaan sampah, konservasi, energi bersih, dan adaptasi iklim.",
+    color: "#3F7E44",
+    icon: Leaf,
+  },
+  {
+    label: "04",
+    name: "Kesehatan & Inklusi",
+    detail: "Layanan promotif, edukasi kesehatan, dan penguatan akses kelompok rentan.",
+    color: "#DD1367",
+    icon: HeartPulse,
+  },
 ];
 
-const CONTRIBUTORS = [
-  "Mahasiswa",
-  "Dosen",
-  "Unit Kampus",
+const STAKEHOLDERS = [
+  "SDGs Center",
+  "Fakultas & Prodi",
   "Mitra Industri",
-  "Komunitas",
-  "Pemerintah",
+  "Pemerintah Daerah",
+  "Komunitas Lokal",
+  "Alumni & Volunteer",
 ];
 
-const FLOW_SOURCES = [
+const CORE_BLOCKS = [
   {
-    icon: FlaskConical,
-    title: "Topik Riset Dosen",
-    body: "Topik riset yang dibuka dosen untuk kolaborasi bersama mahasiswa.",
+    icon: ClipboardCheck,
+    title: "Perencanaan Program",
+    body: "Setiap inisiatif dimulai dari isu prioritas, target manfaat, dan indikator yang bisa diukur.",
   },
   {
-    icon: Building2,
-    title: "Project dari Mitra",
-    body: "Tantangan nyata dari mitra eksternal yang perlu solusi bersama.",
+    icon: Handshake,
+    title: "Kolaborasi Lapangan",
+    body: "Pelaksanaan disusun bersama mitra agar program tidak berhenti sebagai kegiatan seremonial.",
   },
   {
-    icon: Lightbulb,
-    title: "Ide Mahasiswa",
-    body: "Ruang untuk mengirim ide dan aspirasi kampus berkelanjutan.",
+    icon: FileSpreadsheet,
+    title: "Monitoring Dampak",
+    body: "Capaian, pembelajaran, dan rekomendasi dikumpulkan untuk bahan evaluasi berikutnya.",
   },
 ];
 
-const DELIVERY_STAGES = [
-  "Dosen atau mitra memposting kebutuhan kolaborasi.",
-  "Mahasiswa menelusuri riset dan project yang tersedia.",
-  "Mahasiswa bergabung sesuai minat dan kompetensi.",
-  "Ide kampus berkelanjutan dapat diajukan dari portal yang sama.",
-  "Ide terpilih ditinjau untuk pengembangan lebih lanjut.",
+const PROGRAM_FORMATS = [
+  "Portofolio program CSR",
+  "Peta isu & wilayah sasaran",
+  "Ringkasan target SDGs",
+  "Skema kolaborasi mitra",
 ];
 
 export function HubBentoSection() {
@@ -76,10 +101,11 @@ export function HubBentoSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-3xl font-semibold tracking-tight text-gray-900 md:text-5xl md:leading-[1.12]"
           >
-            Portal kolaborasi untuk{" "}
+            Ruang yang menyusun program CSR menjadi{" "}
             <span className="font-[family-name:var(--font-instrument-serif)] italic text-[#b6252a]">
-              riset, project, dan ide SDGs
+              narasi, pilar, dan dampak
             </span>
+            {" "}yang mudah dibaca.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -88,9 +114,9 @@ export function HubBentoSection() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-6 text-base leading-8 text-neutral-600 md:text-lg"
           >
-            SDGs Hub adalah portal kolaborasi riset dan ide keberlanjutan di
-            Telkom University yang mempertemukan mahasiswa, dosen, dan mitra
-            eksternal dalam satu ekosistem.
+            SDGs Hub bukan lagi ruang submission ide atau riset, melainkan
+            landing page yang menjelaskan bagaimana program CSR Telkom
+            University dirancang, dijalankan, dan ditumbuhkan bersama mitra.
           </motion.p>
         </div>
 
@@ -101,17 +127,17 @@ export function HubBentoSection() {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="grid gap-6 lg:grid-cols-5"
         >
-          <Card className="relative overflow-hidden border-[#b6252a]/10 bg-[linear-gradient(180deg,#fff_0%,#fff7f7_100%)] lg:col-span-3">
+          <Card className="relative overflow-hidden border-[#b6252a]/10 bg-[linear-gradient(180deg,#fff_0%,#fff8f8_100%)] lg:col-span-3">
             <CardContent className="p-7 lg:p-8">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#b6252a]/12 bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b6252a]">
-                    <Handshake className="size-3.5" />
-                    Gambaran Utama
+                    <Building2 className="size-3.5" />
+                    Struktur Hub
                   </div>
                   <h3 className="mt-5 max-w-3xl text-2xl font-semibold leading-tight tracking-tight text-gray-900 md:text-3xl md:leading-[1.2]">
-                    Satu portal untuk mempertemukan kebutuhan riset, project,
-                    dan gagasan mahasiswa.
+                    SDGs Hub merangkum bagaimana satu program CSR dibangun dari
+                    konteks isu sampai laporan dampak.
                   </h3>
                 </div>
                 <div className="hidden rounded-2xl border border-[#b6252a]/10 bg-white px-4 py-3 text-right lg:block">
@@ -119,14 +145,15 @@ export function HubBentoSection() {
                     Fungsi
                   </div>
                   <div className="mt-1 text-2xl font-semibold tracking-tight text-[#b6252a]">
-                    1 Portal
+                    1 Halaman Utama
                   </div>
                 </div>
               </div>
 
               <div className="mt-8 grid gap-4 md:grid-cols-3">
-                {FLOW_SOURCES.map((item) => {
+                {CORE_BLOCKS.map((item) => {
                   const Icon = item.icon;
+
                   return (
                     <div
                       key={item.title}
@@ -146,35 +173,28 @@ export function HubBentoSection() {
                 })}
               </div>
 
-              <div className="mt-8 rounded-[1.75rem] border border-[#b6252a]/10 bg-[#1a0d0f] p-5 text-white md:p-6">
-                <div className="grid gap-5 md:grid-cols-[1.2fr_auto_1fr] md:items-center">
+              <div className="mt-8 rounded-[1.75rem] border border-[#b6252a]/10 bg-[#180d0f] p-5 text-white md:p-6">
+                <div className="grid gap-5 md:grid-cols-[1.15fr_auto_1fr] md:items-center">
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
-                      Fungsi Utama SDGs Hub
+                      Prinsip Utama
                     </div>
                     <div className="mt-2 max-w-xl text-lg font-semibold leading-8 text-white">
-                      Menghubungkan pihak yang tepat untuk membangun kolaborasi
-                      yang lebih terarah.
+                      Program CSR perlu punya arah yang jelas, partner yang
+                      tepat, dan cara membaca dampak yang konsisten.
                     </div>
                   </div>
                   <div className="hidden h-px w-14 bg-white/15 md:block" />
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      { icon: Search, label: "Cari Tim" },
-                      { icon: Rocket, label: "Bangun Solusi" },
-                      { icon: Users, label: "Kolaborasi" },
-                    ].map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <div
-                          key={item.label}
-                          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white/80"
-                        >
-                          <Icon className="size-3.5" />
-                          {item.label}
-                        </div>
-                      );
-                    })}
+                    {PROGRAM_FORMATS.map((item) => (
+                      <div
+                        key={item}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white/80"
+                      >
+                        <ArrowRight className="size-3.5" />
+                        {item}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -184,39 +204,53 @@ export function HubBentoSection() {
           <Card className="overflow-hidden border-[#b6252a]/10 bg-white lg:col-span-2">
             <CardContent className="p-7 lg:p-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#b6252a]/12 bg-[#fff6f6] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b6252a]">
-                <Lightbulb className="size-3.5" />
-                Isi Di Dalamnya
+                <Leaf className="size-3.5" />
+                Pilar Program
               </div>
               <h3 className="mt-4 text-xl font-semibold leading-snug tracking-tight text-gray-900">
-                Semua fitur utama tersedia dalam satu alur yang terhubung.
+                Empat fokus utama untuk menyusun portofolio CSR secara lebih
+                jelas.
               </h3>
               <p className="mt-3 text-sm leading-7 text-neutral-600 md:text-[15px]">
-                Pengguna dapat mencari peluang riset, mengirim ide, dan memberi
-                dukungan pada aspirasi yang relevan.
+                Setiap pilar membawa karakter program yang berbeda, namun tetap
+                terhubung dengan agenda SDGs dan kebutuhan lapangan.
               </p>
 
-              <div className="mt-7 grid grid-cols-2 gap-3">
-                {HUB_CONTENTS.map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-black/6 bg-[#fcfcfc] p-5"
-                  >
-                    <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      <span
-                        className="inline-block size-2 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      {item.label}
-                    </div>
-                    <div className="mt-3 text-sm font-semibold leading-snug text-gray-900">
-                      {item.name}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="mt-7 grid grid-cols-1 gap-3">
+                {CSR_PILLARS.map((item) => {
+                  const Icon = item.icon;
 
-              <div className="mt-6 rounded-2xl border border-dashed border-[#b6252a]/20 bg-[#fff9f9] px-4 py-4 text-sm leading-7 text-neutral-600">
-                Seluruh proses dirancang agar tidak terpecah di banyak tempat.
+                  return (
+                    <div
+                      key={item.label}
+                      className="rounded-2xl border border-black/6 bg-[#fcfcfc] p-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                          style={{ backgroundColor: `${item.color}15` }}
+                        >
+                          <Icon className="h-4 w-4" style={{ color: item.color }} />
+                        </div>
+                        <div>
+                          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                            <span
+                              className="inline-block size-2 rounded-full"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            {item.label}
+                          </div>
+                          <div className="mt-2 text-sm font-semibold leading-snug text-gray-900">
+                            {item.name}
+                          </div>
+                          <p className="mt-1 text-sm leading-6 text-neutral-600">
+                            {item.detail}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -224,15 +258,15 @@ export function HubBentoSection() {
           <Card className="overflow-hidden border-[#b6252a]/10 bg-white lg:col-span-2">
             <CardContent className="p-7 lg:p-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#b6252a]/12 bg-[#fff6f6] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b6252a]">
-                <Users className="size-3.5" />
-                Siapa Yang Terlibat
+                <Handshake className="size-3.5" />
+                Kolaborator
               </div>
               <h3 className="mt-4 text-xl font-semibold leading-snug tracking-tight text-gray-900">
-                SDGs Hub mempertemukan pihak-pihak yang berperan dalam ekosistem
-                kampus.
+                Program CSR hanya berjalan baik jika semua peran terlihat dan
+                terhubung.
               </h3>
               <div className="mt-7 flex flex-wrap gap-3">
-                {CONTRIBUTORS.map((item) => (
+                {STAKEHOLDERS.map((item) => (
                   <div
                     key={item}
                     className="rounded-full border border-[#b6252a]/10 bg-[#fff9f9] px-4 py-2.5 text-sm font-medium text-gray-700"
@@ -242,8 +276,9 @@ export function HubBentoSection() {
                 ))}
               </div>
               <p className="mt-6 text-sm leading-7 text-neutral-600 md:text-[15px]">
-                Kolaborasi menjadi lebih mudah, lebih terarah, dan lebih dekat
-                dengan kebutuhan nyata.
+                Halaman ini membantu mitra memahami siapa yang terlibat, apa
+                fokus intervensinya, dan bagaimana program dibawa hingga
+                memberi manfaat.
               </p>
             </CardContent>
           </Card>
@@ -253,28 +288,33 @@ export function HubBentoSection() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#b6252a]/12 bg-[#fff6f6] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b6252a]">
-                    <FlaskConical className="size-3.5" />
-                    Cara Kerja SDGs Hub
+                    <ClipboardCheck className="size-3.5" />
+                    Komitmen Konten
                   </div>
                   <h3 className="mt-4 max-w-3xl text-xl font-semibold leading-snug tracking-tight text-gray-900 md:text-2xl">
-                    Alur kerja yang jelas dari kebutuhan awal hingga tindak
-                    lanjut.
+                    SDGs Hub dirancang untuk menjelaskan program CSR dengan cara
+                    yang lebih tertib, bukan sekadar menampilkan aktivitas.
                   </h3>
                 </div>
                 <ArrowRight className="mt-1 hidden size-5 text-[#b6252a] lg:block" />
               </div>
 
-              <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-                {DELIVERY_STAGES.map((stage, index) => (
+              <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                {[
+                  "Latar isu yang direspon program",
+                  "Pilar dan bentuk intervensi utama",
+                  "Mitra pelaksana dan wilayah sasaran",
+                  "Indikator dampak yang ingin dicapai",
+                ].map((item, index) => (
                   <div
-                    key={stage}
-                    className="rounded-2xl border border-black/6 bg-white p-6 md:min-h-[180px] xl:min-h-[190px]"
+                    key={item}
+                    className="rounded-2xl border border-black/6 bg-white p-6 md:min-h-[180px]"
                   >
                     <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b6252a]">
-                      Tahap {index + 1}
+                      Fokus 0{index + 1}
                     </div>
                     <div className="mt-4 text-sm font-semibold leading-7 text-gray-900 md:text-[15px]">
-                      {stage}
+                      {item}
                     </div>
                   </div>
                 ))}
