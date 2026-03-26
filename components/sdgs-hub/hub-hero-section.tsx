@@ -1,44 +1,41 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ArrowRight, FileBarChart2 } from "lucide-react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { STATS, SDG_TILES, fadeUp, statCard } from "./hub-data";
+
+import { SDG_TILES, STATS, fadeUp, statCard } from "./hub-data";
 
 export function HubHeroSection() {
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-gray-50/80 to-white">
-      {/* Dot grid */}
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#fff7f7_0%,#fffdfd_24%,#ffffff_100%)]">
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage:
-            "radial-gradient(circle, rgba(182,37,42,0.7) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
+            "radial-gradient(circle, rgba(182,37,42,0.72) 1px, transparent 1px)",
+          backgroundSize: "30px 30px",
         }}
       />
+      <div className="pointer-events-none absolute -left-20 top-16 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(182,37,42,0.12)_0%,transparent_68%)] blur-3xl" />
+      <div className="pointer-events-none absolute right-[-8rem] top-24 h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(253,157,36,0.10)_0%,transparent_68%)] blur-3xl" />
+      <div className="pointer-events-none absolute bottom-16 left-1/2 h-[280px] w-[280px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(38,189,226,0.08)_0%,transparent_72%)] blur-3xl" />
 
-      {/* Soft colour blobs */}
-      <div className="pointer-events-none absolute -top-24 left-1/4 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,rgba(182,37,42,0.07)_0%,transparent_65%)] blur-3xl" />
-      <div className="pointer-events-none absolute top-40 -right-32 h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(38,189,226,0.06)_0%,transparent_65%)] blur-3xl" />
-      <div className="pointer-events-none absolute bottom-28 left-1/2 h-[280px] w-[280px] rounded-full bg-[radial-gradient(circle,rgba(76,159,56,0.05)_0%,transparent_65%)] blur-3xl" />
-
-      {/* SDG tile column strip – desktop right side */}
       <div
-        className="pointer-events-none absolute right-0 top-0 hidden lg:block h-full w-[216px] overflow-hidden"
+        className="pointer-events-none absolute right-0 top-0 hidden h-full w-[220px] overflow-hidden xl:block"
         style={{
           maskImage:
-            "linear-gradient(to left, rgba(255,255,255,0.85) 40%, transparent 100%)",
+            "linear-gradient(to left, rgba(255,255,255,0.9) 28%, transparent 100%)",
         }}
       >
-        <div className="flex flex-wrap gap-2 p-3 pt-32 opacity-[0.22]">
-          {[...SDG_TILES, ...SDG_TILES].map((color, i) => (
+        <div className="flex flex-wrap gap-2 px-4 pb-10 pt-28 opacity-[0.2]">
+          {[...SDG_TILES, ...SDG_TILES].map((color, index) => (
             <motion.div
-              key={i}
-              initial={{ opacity: 0, x: 20 }}
+              key={`${color}-${index}`}
+              initial={{ opacity: 0, x: 18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{
-                delay: 0.08 + i * 0.025,
+                delay: 0.08 + index * 0.02,
                 duration: 0.45,
                 ease: "easeOut",
               }}
@@ -49,107 +46,140 @@ export function HubHeroSection() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-[1100px] mx-auto px-6 pt-[130px] pb-32 flex flex-col items-center gap-8">
-        {/* Badge */}
-        {/* <motion.div
-          custom={0}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="inline-flex items-center gap-2 rounded-full border border-[#b6252a]/20 bg-[#b6252a]/5 px-4 py-1.5 text-sm font-medium text-[#b6252a]"
-        >
-          <span className="h-2 w-2 rounded-full bg-[#ed1e28] animate-pulse" />
-          SDGs Hub — Telkom University
-        </motion.div> */}
+      <div className="relative mx-auto flex w-full max-w-[1160px] flex-col gap-12 px-6 pb-28 pt-[132px] lg:gap-16 lg:pb-32">
+        <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
+          <div className="max-w-4xl">
+            <motion.h1
+              custom={0}
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              className="font-[family-name:var(--font-geist-sans)] text-[clamp(2.4rem,6.5vw,4.8rem)] font-medium leading-[0.98] tracking-[-0.045em] text-gray-900"
+            >
+              Program CSR yang
+              <span className="mt-2 block font-[family-name:var(--font-instrument-serif)] text-[clamp(2.5rem,6.9vw,5.2rem)] italic text-[#b6252a]">
+                terarah, terukur,
+              </span>
+              <span className="block">dan mudah dipahami.</span>
+            </motion.h1>
 
-        {/* Heading */}
-        <motion.h1
-          custom={1}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="text-center font-[family-name:var(--font-geist-sans)] font-medium tracking-[-0.04em] text-5xl md:text-[76px] md:leading-[1.05] text-gray-900"
-        >
-          Kolaborasi nyata untuk{" "}
-          <span className="font-[family-name:var(--font-instrument-serif)] italic text-6xl md:text-[96px] md:leading-[1] text-[#b6252a]">
-            masa depan
-          </span>
-          <br />
-          yang berkelanjutan
-        </motion.h1>
+            <motion.p
+              custom={1}
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              className="mt-5 max-w-2xl text-sm leading-7 text-[#6f5b5f] md:text-base"
+            >
+              SDGs Hub kini difokuskan sebagai wajah program CSR Telkom
+              University: tempat untuk menjelaskan fokus program, menjabarkan
+              alur implementasi, dan menunjukkan dampak yang ingin dibangun
+              bersama mitra serta komunitas.
+            </motion.p>
 
-        {/* Description */}
-        <motion.p
-          custom={2}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="text-center text-lg text-gray-500 max-w-[560px] leading-relaxed"
-        >
-          SDGs Hub mempertemukan mahasiswa, dosen, dan mitra eksternal untuk
-          berkolaborasi dalam riset, inovasi, dan aspirasi demi agenda
-          pembangunan berkelanjutan Telkom University.
-        </motion.p>
+            <motion.div
+              custom={2}
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              className="mt-8 flex flex-col gap-4 sm:flex-row"
+            >
+              <Link
+                href="#program-csr"
+                className="inline-flex min-w-[220px] items-center justify-center gap-2 rounded-full border border-[#8f1a20]/30 bg-[linear-gradient(135deg,#8f1a20_0%,#b6252a_42%,#ed1e28_100%)] px-8 py-4 text-base font-semibold text-white shadow-[0_20px_45px_-18px_rgba(182,37,42,0.62),inset_0_1px_0_rgba(255,255,255,0.26)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105"
+              >
+                Jelajahi Pilar CSR
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="#alur-csr"
+                className="inline-flex min-w-[220px] items-center justify-center rounded-full border border-[#d9c8cb] bg-white/88 px-8 py-4 text-base font-semibold text-[#7d2328] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#b6252a]/25 hover:bg-white"
+              >
+                Lihat Alur Program
+              </Link>
+            </motion.div>
+          </div>
 
-        {/* CTA */}
-        <motion.div
-          custom={3}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col items-center gap-4 pt-2 sm:flex-row"
-        >
-          <Link
-            href="/sdgs-hub/riset"
-            className="inline-flex min-w-[220px] items-center justify-center gap-2 rounded-full border border-[#8f1a20]/30 bg-[linear-gradient(135deg,#8f1a20_0%,#b6252a_42%,#ed1e28_100%)] px-8 py-4 text-base font-semibold text-white shadow-[0_20px_45px_-18px_rgba(182,37,42,0.6),inset_0_1px_0_rgba(255,255,255,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_28px_55px_-18px_rgba(182,37,42,0.75)]"
+          <motion.div
+            custom={4}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="relative overflow-hidden rounded-[2rem] border border-[#f1d8da] bg-[linear-gradient(180deg,rgba(255,255,255,0.9)_0%,rgba(255,244,245,0.9)_100%)] p-6 shadow-[0_30px_70px_-42px_rgba(17,24,39,0.38)]"
           >
-            Mulai Berkolaborasi
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href="/sdgs-hub/ide"
-            className="inline-flex min-w-[220px] items-center justify-center rounded-full border border-gray-200 bg-white px-8 py-4 text-base font-semibold text-gray-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#b6252a]/25 hover:text-[#b6252a] hover:shadow-md"
-          >
-            Kirim Ide Kamu
-          </Link>
-        </motion.div>
+            <div className="absolute inset-x-0 top-0 h-1.5 bg-[linear-gradient(90deg,#b6252a_0%,#ed1e28_42%,#fd9d24_100%)]" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#fff1f1] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-[#9f1f25]">
+              <FileBarChart2 className="h-3.5 w-3.5" />
+              Kerangka Hub
+            </div>
+            <div className="mt-5 grid gap-4">
+              {[
+                {
+                  title: "Peta Prioritas",
+                  body: "Menjelaskan isu, target SDGs, dan kelompok penerima manfaat untuk setiap program.",
+                },
+                {
+                  title: "Portofolio Pelaksanaan",
+                  body: "Menampilkan pilar program CSR, bentuk kegiatan, dan model kolaborasi yang dipakai.",
+                },
+                {
+                  title: "Jejak Dampak",
+                  body: "Menyusun capaian, pembelajaran, dan potensi pengembangan program ke tahap berikutnya.",
+                },
+              ].map((item, index) => (
+                <div
+                  key={item.title}
+                  className="rounded-[1.5rem] border border-[#f3dfe1] bg-white/92 p-4"
+                >
+                  <div className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#b6252a]/70">
+                    0{index + 1}
+                  </div>
+                  <h2 className="mt-2 text-lg font-semibold text-gray-900">
+                    {item.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-[#6e5a5e]">
+                    {item.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
 
-        {/* Stats */}
-        <motion.div className="w-full pt-12" initial="hidden" animate="visible">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <motion.div className="w-full" initial="hidden" animate="visible">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
             {STATS.map((stat, index) => {
               const Icon = stat.icon;
+
               return (
                 <motion.div
                   key={stat.label}
                   custom={index}
                   variants={statCard}
-                  className="group relative rounded-2xl border border-gray-100 bg-white p-5 md:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-gray-200 overflow-hidden"
+                  className="group relative overflow-hidden rounded-[1.6rem] border border-[#f1ebeb] bg-white/92 p-5 shadow-[0_24px_55px_-42px_rgba(15,23,42,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_60px_-42px_rgba(182,37,42,0.28)] md:p-6"
                 >
                   <div
-                    className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl"
+                    className="absolute inset-x-0 top-0 h-[3px]"
                     style={{ backgroundColor: stat.color }}
                   />
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between">
                     <div
-                      className="flex h-9 w-9 items-center justify-center rounded-xl"
-                      style={{ backgroundColor: `${stat.color}15` }}
+                      className="flex h-10 w-10 items-center justify-center rounded-2xl"
+                      style={{ backgroundColor: `${stat.color}14` }}
                     >
                       <Icon className="h-4 w-4" style={{ color: stat.color }} />
                     </div>
                     <div
-                      className="h-1.5 w-1.5 rounded-full opacity-50"
+                      className="h-2 w-2 rounded-full"
                       style={{ backgroundColor: stat.color }}
                     />
                   </div>
-                  <div className="text-3xl md:text-4xl lg:text-[44px] font-semibold tracking-[-0.03em] text-gray-900 leading-none font-[family-name:var(--font-geist-sans)]">
+                  <div className="mt-6 text-[2rem] font-semibold leading-none tracking-[-0.04em] text-gray-900 md:text-[2.55rem]">
                     {stat.number}
                   </div>
-                  <div className="mt-2 text-sm font-semibold text-gray-800">
+                  <div className="mt-2 text-sm font-semibold text-gray-900">
                     {stat.label}
                   </div>
-                  <div className="mt-0.5 text-xs text-gray-400">
+                  <div className="mt-1 text-xs leading-5 text-[#8a777b]">
                     {stat.desc}
                   </div>
                 </motion.div>

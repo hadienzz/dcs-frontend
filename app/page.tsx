@@ -8,9 +8,8 @@ import { Navbar } from "../components/home/section/navbar";
 import NewsSection from "../components/home/section/news-section";
 import { ProductSection } from "../components/home/section/product-section";
 import IndonesiaMap from "../components/home/custom/map-proyek-indonesia";
-import FloatingVoiceOver from "../components/home/custom/voice-over";
+import ClientOnlyWidgets from "../components/home/custom/client-only-widgets";
 import { ScrollSection } from "@/components/ui/scroll-section";
-import Widget from "@/components/home/custom/widget";
 
 export default function HomePage() {
   return (
@@ -33,9 +32,7 @@ export default function HomePage() {
       <ScrollSection y={18} duration={0.6}>
         <Footer />
       </ScrollSection>
-      <FloatingVoiceOver />
-
-      <Widget />
+      <ClientOnlyWidgets />
     </main>
   );
 }
