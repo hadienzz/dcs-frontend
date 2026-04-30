@@ -21,6 +21,13 @@ export type SdgProjectStatus = "ongoing" | "completed";
 export type ProjectParticipantStatus = "joined" | "invited";
 export type VisibilityScope = "csr" | "internal";
 export type PartnerStageApprovalStatus = "pending" | "approved";
+export type ProjectStageStatus =
+  | "NOT_STARTED"
+  | "DRAFT"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "REVISION_REQUESTED"
+  | "APPROVED";
 
 export interface DashboardTab {
   id: DashboardTabId;
@@ -106,6 +113,7 @@ export interface SdgDashboardProjectRecord {
   timelineApprovalStatus: PartnerStageApprovalStatus;
   budgetApprovalStatus: PartnerStageApprovalStatus;
   progressApprovalStatus: PartnerStageApprovalStatus;
+  progressStageStatus: ProjectStageStatus;
   proposalPdfName: string | null;
   proposalPdfUrl: string | null;
   proposalPdfDataUrl: string | null;
@@ -142,6 +150,7 @@ interface CreateSeedProjectInput extends CreateProjectRecordInput {
   timelineApprovalStatus?: PartnerStageApprovalStatus;
   budgetApprovalStatus?: PartnerStageApprovalStatus;
   progressApprovalStatus?: PartnerStageApprovalStatus;
+  progressStageStatus?: ProjectStageStatus;
   proposalPdfName?: string | null;
   proposalPdfUrl?: string | null;
   proposalPdfDataUrl?: string | null;
@@ -554,7 +563,8 @@ export function createDefaultParticipants(externalName: string) {
 
 function hasSharedPartnerReports(reports?: Array<Partial<MonthlyReport>>) {
   return (reports ?? []).some(
-    (report) => report.visibilityScope !== "internal" && Boolean(report.fileName),
+    (report) =>
+      report.visibilityScope !== "internal" && Boolean(report.summary?.trim()),
   );
 }
 
@@ -626,6 +636,9 @@ export function normalizeProjectRecord(
     progressApprovalEligible,
     rawProject.progressApprovalStatus == null && progressApprovalEligible,
   );
+  const progressStageStatus =
+    rawProject.progressStageStatus ??
+    (progressApprovalStatus === "approved" ? "APPROVED" : "NOT_STARTED");
 
   return {
     id: rawProject.id ?? createId("project"),
@@ -654,6 +667,7 @@ export function normalizeProjectRecord(
     timelineApprovalStatus,
     budgetApprovalStatus,
     progressApprovalStatus,
+    progressStageStatus,
     proposalPdfName: rawProject.proposalPdfName ?? null,
     proposalPdfUrl: rawProject.proposalPdfUrl ?? null,
     proposalPdfDataUrl: rawProject.proposalPdfDataUrl ?? null,
@@ -702,6 +716,7 @@ export function createProjectRecord(
     timelineApprovalStatus: "pending",
     budgetApprovalStatus: "pending",
     progressApprovalStatus: "pending",
+    progressStageStatus: "NOT_STARTED",
     proposalPdfName: null,
     proposalPdfUrl: null,
     proposalPdfDataUrl: null,
@@ -744,6 +759,8 @@ function createSeedProject(
       budgetApprovalStatus: input.budgetApprovalStatus ?? project.budgetApprovalStatus,
       progressApprovalStatus:
         input.progressApprovalStatus ?? project.progressApprovalStatus,
+      progressStageStatus:
+        input.progressStageStatus ?? project.progressStageStatus,
       proposalPdfName: input.proposalPdfName ?? project.proposalPdfName,
       proposalPdfUrl: input.proposalPdfUrl ?? project.proposalPdfUrl,
       proposalPdfDataUrl: input.proposalPdfDataUrl ?? project.proposalPdfDataUrl,

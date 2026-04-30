@@ -158,8 +158,13 @@ export function ExternalProjectPortal({
   const budgetApprovalReady =
     currentProject.timelineApprovalStatus === "approved" &&
     currentProject.budgetSaved;
+  const progressReviewable =
+    currentProject.progressStageStatus === "UNDER_REVIEW" ||
+    currentProject.progressStageStatus === "SUBMITTED";
   const progressApprovalReady =
-    currentProject.budgetApprovalStatus === "approved" && sharedReportsCount > 0;
+    currentProject.budgetApprovalStatus === "approved" &&
+    progressReviewable &&
+    sharedReportsCount > 0;
   const timelineApprovalHelperText =
     currentProject.externalApprovalStatus !== "approved"
       ? "Setujui proposal terlebih dahulu sebelum menyetujui timeline."
@@ -175,9 +180,11 @@ export function ExternalProjectPortal({
   const progressApprovalHelperText =
     currentProject.budgetApprovalStatus !== "approved"
       ? "Setujui budget terlebih dahulu sebelum menyetujui progress."
-      : sharedReportsCount === 0
-        ? "Belum ada laporan mitra yang dibagikan untuk direview."
-        : "Klik setujui setelah laporan progress dinilai sudah sesuai."
+      : !progressReviewable
+        ? "Tim internal belum mengirim progress untuk direview. Minta mereka klik \"Simpan progress\" terlebih dahulu."
+        : sharedReportsCount === 0
+          ? "Belum ada laporan mitra yang dibagikan untuk direview."
+          : "Klik setujui setelah laporan progress dinilai sudah sesuai."
 
   async function approveProposal() {
     if (

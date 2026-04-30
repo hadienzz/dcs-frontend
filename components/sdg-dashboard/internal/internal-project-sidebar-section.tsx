@@ -1,18 +1,15 @@
-import Link from "next/link";
-import { Eye, ShieldCheck, UsersRound, Wallet } from "lucide-react";
+import { ShieldCheck, UsersRound, Wallet } from "lucide-react";
 
 import type { ProjectParticipant } from "@/components/sdg-dashboard/dashboard-data";
 import { DashboardIconBadge } from "@/components/sdg-dashboard/dashboard-icon-badge";
 import { ParticipantAvatar } from "@/components/sdg-dashboard/participant-avatar";
 import { PortalSection } from "@/components/sdg-dashboard/portal-section";
-import { Button } from "@/components/ui/button";
 
 interface InternalProjectSidebarSectionProps {
   sharedBudgetLabel: string;
   sharedBudgetItemsCount: number;
   sharedReportsCount: number;
   joinedParticipants: ProjectParticipant[];
-  externalHref: string;
 }
 
 export function InternalProjectSidebarSection({
@@ -20,7 +17,6 @@ export function InternalProjectSidebarSection({
   sharedBudgetItemsCount,
   sharedReportsCount,
   joinedParticipants,
-  externalHref,
 }: InternalProjectSidebarSectionProps) {
   return (
     <div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
@@ -63,13 +59,6 @@ export function InternalProjectSidebarSection({
               {sharedReportsCount} laporan
             </p>
           </div>
-
-          <Button asChild className="w-full">
-            <Link href={externalHref}>
-              <Eye data-icon="inline-start" />
-              Preview portal mitra
-            </Link>
-          </Button>
         </div>
       </PortalSection>
 

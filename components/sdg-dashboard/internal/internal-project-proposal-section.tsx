@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ChangeEvent, FormEvent } from "react";
 import { FileText, LoaderCircle, Sparkles, Upload } from "lucide-react";
 
@@ -6,7 +5,6 @@ import type {
   SdgDashboardProjectRecord,
 } from "@/components/sdg-dashboard/dashboard-data";
 import { ExternalApprovalBadge } from "@/components/sdg-dashboard/external-approval-badge";
-import { getExternalPortalPath } from "@/components/sdg-dashboard/dashboard-data";
 import { PortalSection } from "@/components/sdg-dashboard/portal-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -313,9 +311,6 @@ export function InternalProjectProposalSection({
           >
             <FileText data-icon="inline-start" />
             {downloadLabel}
-          </Button>
-          <Button asChild variant="secondary">
-            <Link href={getExternalPortalPath(project)}>Lihat tampilan mitra</Link>
           </Button>
         </div>
       </form>

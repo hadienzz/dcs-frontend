@@ -11,7 +11,7 @@ import {
 const useRegenerateInvitationCode = (projectSlug: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const { mutate, mutateAsync, isPending, isError, error } = useMutation({
     mutationFn: () => regenerateInvitationCode(projectSlug),
     mutationKey: ["internal", "invitation-code", projectSlug],
     onSuccess: async (project) => {
@@ -24,6 +24,13 @@ const useRegenerateInvitationCode = (projectSlug: string) => {
       });
     },
   });
+  return {
+    mutate,
+    mutateAsync,
+    isPending,
+    isError,
+    error,
+  };
 };
 
 export default useRegenerateInvitationCode;
