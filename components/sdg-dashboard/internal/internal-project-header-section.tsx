@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Copy, Eye, RefreshCcw, ScrollText } from "lucide-react";
+import { Copy, RefreshCcw, ScrollText } from "lucide-react";
 
 import type { SdgDashboardProjectRecord } from "@/components/sdg-dashboard/dashboard-data";
 import { DashboardIconBadge } from "@/components/sdg-dashboard/dashboard-icon-badge";
@@ -18,7 +17,6 @@ interface InternalProjectHeaderSectionProps {
     totalSteps: number;
     percentage: number;
   };
-  externalHref: string;
   onCopyInvitationCode: () => void;
   onRegenerateInvitationCode: () => void;
   onToggleProjectStatus: () => void;
@@ -28,7 +26,6 @@ export function InternalProjectHeaderSection({
   project,
   currentStageLabel,
   workflow,
-  externalHref,
   onCopyInvitationCode,
   onRegenerateInvitationCode,
   onToggleProjectStatus,
@@ -142,12 +139,6 @@ export function InternalProjectHeaderSection({
               </div>
 
               <div className="flex flex-col gap-3">
-                <Button asChild>
-                  <Link href={externalHref}>
-                    <Eye data-icon="inline-start" />
-                    Buka portal mitra
-                  </Link>
-                </Button>
                 <Button type="button" variant="outline" onClick={onToggleProjectStatus}>
                   {project.status === "completed"
                     ? "Kembalikan ke ongoing"

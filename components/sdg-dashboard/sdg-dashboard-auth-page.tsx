@@ -477,7 +477,7 @@ export function SdgDashboardAuthPage() {
               )}
             </AnimatePresence>
 
-            <div className="mt-6 rounded-[26px] border border-[#f1d8db] bg-[#fff7f8] px-4 py-4">
+            {/* <div className="mt-6 rounded-[26px] border border-[#f1d8db] bg-[#fff7f8] px-4 py-4">
               <div className="flex items-start gap-3 text-[#7a4d51]">
                 <Sparkles className="mt-0.5 h-5 w-5 text-[#b6252a]" />
                 <p className="text-sm leading-6">
@@ -485,7 +485,7 @@ export function SdgDashboardAuthPage() {
                   otomatis menjadi pihak eksternal.
                 </p>
               </div>
-            </div>
+            </div> */}
           </div>
         </section>
       </div>

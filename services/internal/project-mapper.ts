@@ -267,6 +267,7 @@ export function mapApiProjectToDashboardProject(
     timelineApprovalStatus: derivePartnerStageApprovalStatus(timelineStage),
     budgetApprovalStatus: derivePartnerStageApprovalStatus(budgetStage),
     progressApprovalStatus: derivePartnerStageApprovalStatus(progressStage),
+    progressStageStatus: progressStage?.status ?? "NOT_STARTED",
     proposalPdfName: proposalDocument?.file_name ?? null,
     proposalPdfUrl: proposalDocument?.file_url ?? null,
     proposalPdfDataUrl: null,

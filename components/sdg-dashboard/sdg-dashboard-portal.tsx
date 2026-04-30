@@ -7,11 +7,11 @@ import {
   useState,
 } from "react";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   dashboardTabs,
   getExternalApprovalMeta,
-  getExternalPortalPath,
   getBudgetItemSubtotal,
   getJoinedParticipants,
   getProjectBudgetTotals,
@@ -327,7 +327,6 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
   const timelineUnlocked = currentProject.externalApprovalStatus === "approved";
   const budgetUnlocked = currentProject.timelineApprovalStatus === "approved";
   const progressUnlocked = currentProject.budgetApprovalStatus === "approved";
-  const externalHref = getExternalPortalPath(currentProject);
   const budgetPreviewProject = {
     ...currentProject,
     budgetItems,
@@ -400,11 +399,25 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
         body: "Kode akses siap dibagikan ke mitra eksternal.",
         tone: "success",
       });
+      toast.info("Kode berhasil disalin", {
+        description: "Invitation code sudah masuk ke clipboard.",
+        duration: 3000,
+        className:
+          "border border-primary/20 bg-[linear-gradient(180deg,rgba(182,37,42,0.12),rgba(182,37,42,0.04)_72%,rgba(255,255,255,0.98)_100%)] text-foreground shadow-[0_20px_50px_-36px_rgba(122,18,24,0.45)]",
+        descriptionClassName: "text-muted-foreground",
+      });
     } catch {
       setNotice({
         title: "Clipboard tidak tersedia",
         body: "Silakan salin invitation code langsung dari kartu akses proyek.",
         tone: "warning",
+      });
+      toast.error("Clipboard tidak tersedia", {
+        description:
+          "Silakan salin invitation code langsung dari kartu akses proyek.",
+        className:
+          "border border-primary/15 bg-[linear-gradient(180deg,rgba(182,37,42,0.16),rgba(182,37,42,0.06)_70%,rgba(255,255,255,0.98)_100%)] text-foreground shadow-[0_18px_46px_-32px_rgba(122,18,24,0.4)]",
+        descriptionClassName: "text-muted-foreground",
       });
     }
   }
@@ -606,7 +619,6 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
           project={currentProject}
           currentStageLabel={currentStageLabel}
           workflow={workflow}
-          externalHref={externalHref}
           onCopyInvitationCode={handleCopyInvitationCode}
           onRegenerateInvitationCode={handleRegenerateInvitationCode}
           onToggleProjectStatus={handleToggleProjectStatus}
@@ -714,7 +726,6 @@ export function SdgDashboardPortal({ projectSlug }: SdgDashboardPortalProps) {
               sharedBudgetItemsCount={overviewBudgetItems.length}
               sharedReportsCount={sharedReportsCount}
               joinedParticipants={joinedParticipants}
-              externalHref={externalHref}
             />
           </div>
         </Tabs>

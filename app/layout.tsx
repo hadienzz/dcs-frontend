@@ -1,11 +1,14 @@
 import type React from "react";
 import { Agentation } from "agentation";
 import type { Metadata } from "next";
-import { Inter, Poppins, Instrument_Serif } from "next/font/google";
+import { Inter, Poppins, Instrument_Serif, Geist } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { Providers } from "./providers";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -41,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${poppins.variable} ${GeistSans.variable} ${instrumentSerif.variable} antialiased`}
+      className={cn("antialiased", inter.variable, poppins.variable, GeistSans.variable, instrumentSerif.variable, "font-sans", geist.variable)}
     >
       <head>
         <link rel="preconnect" href="https://cdn.sanity.io" />
