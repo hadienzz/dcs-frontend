@@ -41,6 +41,14 @@ type BackendDocumentCenterStore = {
   users: BackendAccount[];
   activity_logs: BackendActivityLog[];
   recent_documents: BackendDocumentRecord[];
+  recent_documents_pagination?: {
+    page: number;
+    page_size: number;
+    total_items: number;
+    total_pages: number;
+    range: "all" | "today" | "7d" | "30d" | "90d";
+    sort: "newest" | "oldest";
+  };
   recent_activity_logs: BackendActivityLog[];
   stats: {
     total_documents: number;
@@ -175,12 +183,23 @@ function mapActivityLog(log: BackendActivityLog): EnrichedActivityLogEntry {
 }
 
 function mapStore(store: BackendDocumentCenterStore): DocumentCenterStore {
+  const recentDocuments = store.recent_documents.map(mapDocument);
+  const recentPagination = store.recent_documents_pagination;
+
   return {
     divisions: store.divisions.map(mapDivision),
     documents: store.documents.map(mapDocument),
     users: store.users.map(mapUser),
     activityLogs: store.activity_logs.map(mapActivityLog),
-    recentDocuments: store.recent_documents.map(mapDocument),
+    recentDocuments,
+    recentDocumentsPagination: {
+      page: recentPagination?.page ?? 1,
+      pageSize: recentPagination?.page_size ?? recentDocuments.length,
+      totalItems: recentPagination?.total_items ?? recentDocuments.length,
+      totalPages: recentPagination?.total_pages ?? 1,
+      range: recentPagination?.range ?? "all",
+      sort: recentPagination?.sort ?? "newest",
+    },
     recentActivityLogs: store.recent_activity_logs.map(mapActivityLog),
     stats: {
       totalDocuments: store.stats.total_documents,
@@ -199,6 +218,10 @@ function toApiQuery(query: DocumentCenterQuery) {
     pic_id: query.picId || undefined,
     drive_division_id: query.driveDivisionId || undefined,
     drive_subdivision_id: query.driveSubdivisionId || undefined,
+    recent_range: query.recentRange || undefined,
+    recent_sort: query.recentSort || undefined,
+    recent_page: query.recentPage || undefined,
+    recent_page_size: query.recentPageSize || undefined,
   };
 }
 

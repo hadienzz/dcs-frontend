@@ -92,12 +92,26 @@ export interface DocumentDashboardStats {
   totalPicEntries: number;
 }
 
+export type RecentDocumentRange = "all" | "today" | "7d" | "30d" | "90d";
+
+export type RecentDocumentSort = "newest" | "oldest";
+
+export interface RecentDocumentsPagination {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  range: RecentDocumentRange;
+  sort: RecentDocumentSort;
+}
+
 export interface DocumentCenterStore {
   divisions: DocumentDivision[];
   documents: EnrichedDocumentRecord[];
   users: DocumentAccount[];
   activityLogs: EnrichedActivityLogEntry[];
   recentDocuments: EnrichedDocumentRecord[];
+  recentDocumentsPagination: RecentDocumentsPagination;
   recentActivityLogs: EnrichedActivityLogEntry[];
   stats: DocumentDashboardStats;
 }
@@ -112,6 +126,10 @@ export interface DocumentFilters {
 export interface DocumentCenterQuery extends Partial<DocumentFilters> {
   driveDivisionId?: string;
   driveSubdivisionId?: string;
+  recentRange?: RecentDocumentRange;
+  recentSort?: RecentDocumentSort;
+  recentPage?: number;
+  recentPageSize?: number;
 }
 
 export interface UploadDocumentFormValues {
@@ -179,6 +197,14 @@ export const EMPTY_DOCUMENT_CENTER_STORE: DocumentCenterStore = {
   users: [],
   activityLogs: [],
   recentDocuments: [],
+  recentDocumentsPagination: {
+    page: 1,
+    pageSize: 6,
+    totalItems: 0,
+    totalPages: 1,
+    range: "all",
+    sort: "newest",
+  },
   recentActivityLogs: [],
   stats: {
     totalDocuments: 0,
