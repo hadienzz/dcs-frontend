@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { DeleteDocumentDialog } from "@/components/document-center/delete-document-dialog";
+import { DeleteEntityDialog } from "@/components/document-center/delete-entity-dialog";
 import { DivisionSelect } from "@/components/document-center/division-select";
 import { DocumentCard } from "@/components/document-center/document-card";
 import { DocumentTable } from "@/components/document-center/document-table";
@@ -48,6 +49,8 @@ import type {
   DocumentAccount,
   DocumentDivision,
   DocumentFilters,
+  DocumentPic,
+  DocumentSubdivision,
   DocumentUserRole,
   EnrichedDocumentRecord,
   RecentDocumentRange,
@@ -244,6 +247,48 @@ export function DocumentCenterClient() {
         isDeleting={dashboard.isDeletingDocument}
         onOpenChange={dashboard.deleteDialogActions.onOpenChange}
         onConfirm={dashboard.deleteDialogActions.onConfirm}
+      />
+      <DeleteEntityDialog
+        open={dashboard.isDivisionDeleteDialogOpen}
+        entityLabel="divisi"
+        entityName={dashboard.pendingDeleteDivision?.name}
+        isDeleting={dashboard.isDeletingDivision}
+        onOpenChange={dashboard.divisionDeleteDialogActions.onOpenChange}
+        onConfirm={dashboard.divisionDeleteDialogActions.onConfirm}
+      />
+      <DeleteEntityDialog
+        open={dashboard.isSubdivisionDeleteDialogOpen}
+        entityLabel="subdivisi"
+        entityName={dashboard.pendingDeleteSubdivision?.subdivision.name}
+        context={
+          dashboard.pendingDeleteSubdivision
+            ? `inside ${dashboard.pendingDeleteSubdivision.divisionName}`
+            : undefined
+        }
+        isDeleting={dashboard.isDeletingSubdivision}
+        onOpenChange={dashboard.subdivisionDeleteDialogActions.onOpenChange}
+        onConfirm={dashboard.subdivisionDeleteDialogActions.onConfirm}
+      />
+      <DeleteEntityDialog
+        open={dashboard.isPicDeleteDialogOpen}
+        entityLabel="PIC"
+        entityName={dashboard.pendingDeletePic?.name}
+        isDeleting={dashboard.isDeletingPic}
+        onOpenChange={dashboard.picDeleteDialogActions.onOpenChange}
+        onConfirm={dashboard.picDeleteDialogActions.onConfirm}
+      />
+      <DeleteEntityDialog
+        open={dashboard.isUserDeleteDialogOpen}
+        entityLabel="user"
+        entityName={dashboard.pendingDeleteUser?.name}
+        context={
+          dashboard.pendingDeleteUser
+            ? `with username ${dashboard.pendingDeleteUser.username}`
+            : undefined
+        }
+        isDeleting={dashboard.isDeletingUser}
+        onOpenChange={dashboard.userDeleteDialogActions.onOpenChange}
+        onConfirm={dashboard.userDeleteDialogActions.onConfirm}
       />
     </main>
   );
@@ -807,14 +852,17 @@ function DivisionManagementPanel({
   };
   onCreateDivision: (name: string) => void;
   onUpdateDivision: (divisionId: string, name: string) => void;
-  onDeleteDivision: (divisionId: string) => void;
+  onDeleteDivision: (division: DocumentDivision) => void;
   onCreateSubdivision: (divisionId: string, name: string) => void;
   onUpdateSubdivision: (
     divisionId: string,
     subdivisionId: string,
     name: string,
   ) => void;
-  onDeleteSubdivision: (divisionId: string, subdivisionId: string) => void;
+  onDeleteSubdivision: (
+    division: DocumentDivision,
+    subdivision: DocumentSubdivision,
+  ) => void;
 }) {
   const state = useDivisionManagementState({
     onCreateDivision,
@@ -1013,7 +1061,7 @@ function DivisionManagementPanel({
                         type="button"
                         variant="ghost"
                         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => onDeleteDivision(selectedDivision.id)}
+                        onClick={() => onDeleteDivision(selectedDivision)}
                         disabled={isDeletingDivision || isSavingDivision}
                       >
                         {isDeletingDivision ? (
@@ -1111,8 +1159,8 @@ function DivisionManagementPanel({
                                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                                 onClick={() =>
                                   onDeleteSubdivision(
-                                    selectedDivision.id,
-                                    subdivision.id,
+                                    selectedDivision,
+                                    subdivision,
                                   )
                                 }
                                 disabled={
@@ -1216,7 +1264,7 @@ function PICManagementPanel({
   };
   onCreatePic: (divisionId: string, name: string) => void;
   onUpdatePic: (picId: string, divisionId: string, name: string) => void;
-  onDeletePic: (picId: string) => void;
+  onDeletePic: (pic: DocumentPic) => void;
 }) {
   const state = usePicManagementState({
     divisions,
@@ -1318,7 +1366,7 @@ function PICManagementPanel({
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => onDeletePic(person.id)}
+                      onClick={() => onDeletePic(person)}
                       disabled={isDeletingPic || isSavingPic}
                       aria-label={`Delete ${person.name}`}
                     >
@@ -1373,7 +1421,7 @@ function UserManagementPanel({
     role: DocumentUserRole;
     assignedDivisionIds: string[];
   }) => void;
-  onDeleteUser: (userId: string) => void;
+  onDeleteUser: (user: DocumentAccount) => void;
 }) {
   const state = useUserManagementState({
     onCreateUser,
@@ -1509,7 +1557,7 @@ function UserManagementPanel({
                   variant="ghost"
                   size="icon"
                   className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => onDeleteUser(user.id)}
+                  onClick={() => onDeleteUser(user)}
                   disabled={isDeletingUser || isSavingUser}
                   aria-label={`Delete ${user.name}`}
                 >
