@@ -20,9 +20,12 @@ import { useUpdateUserMutation } from "@/hooks/document-center/use-update-user";
 import { useUploadDocumentForm } from "@/hooks/document-center/use-upload-document-form";
 import { EMPTY_DOCUMENT_CENTER_STORE } from "@/types/document-center";
 import type {
+  DocumentAccount,
   DocumentCenterQuery,
   DocumentDivision,
   DocumentFilters,
+  DocumentPic,
+  DocumentSubdivision,
   DocumentUserRole,
   EnrichedDocumentRecord,
   RecentDocumentRange,
@@ -75,6 +78,12 @@ export const EMPTY_FILTERS: DocumentFilters = {
   picId: "",
 };
 
+type PendingDeleteSubdivision = {
+  divisionId: string;
+  divisionName: string;
+  subdivision: DocumentSubdivision;
+};
+
 function getRecentRangeLabel(range: RecentDocumentRange) {
   return (
     RECENT_RANGE_OPTIONS.find((option) => option.value === range)?.label ??
@@ -98,6 +107,14 @@ export function useDocumentCenterDashboard() {
     useState<EnrichedDocumentRecord | null>(null);
   const [pendingDeleteDocument, setPendingDeleteDocument] =
     useState<EnrichedDocumentRecord | null>(null);
+  const [pendingDeleteDivision, setPendingDeleteDivision] =
+    useState<DocumentDivision | null>(null);
+  const [pendingDeleteSubdivision, setPendingDeleteSubdivision] =
+    useState<PendingDeleteSubdivision | null>(null);
+  const [pendingDeletePic, setPendingDeletePic] =
+    useState<DocumentPic | null>(null);
+  const [pendingDeleteUser, setPendingDeleteUser] =
+    useState<DocumentAccount | null>(null);
 
   const documentCenterQuery: DocumentCenterQuery = useMemo(
     () => ({
@@ -228,6 +245,84 @@ export function useDocumentCenterDashboard() {
     }
   }
 
+  function handleConfirmDeleteDivision() {
+    if (!pendingDeleteDivision) {
+      return;
+    }
+
+    deleteDivisionMutation.mutate(pendingDeleteDivision.id, {
+      onSuccess: () => {
+        setPendingDeleteDivision(null);
+      },
+    });
+  }
+
+  function handleDivisionDeleteDialogOpenChange(open: boolean) {
+    if (!open && !deleteDivisionMutation.isPending) {
+      setPendingDeleteDivision(null);
+    }
+  }
+
+  function handleConfirmDeleteSubdivision() {
+    if (!pendingDeleteSubdivision) {
+      return;
+    }
+
+    deleteSubdivisionMutation.mutate(
+      {
+        divisionId: pendingDeleteSubdivision.divisionId,
+        subdivisionId: pendingDeleteSubdivision.subdivision.id,
+      },
+      {
+        onSuccess: () => {
+          setPendingDeleteSubdivision(null);
+        },
+      },
+    );
+  }
+
+  function handleSubdivisionDeleteDialogOpenChange(open: boolean) {
+    if (!open && !deleteSubdivisionMutation.isPending) {
+      setPendingDeleteSubdivision(null);
+    }
+  }
+
+  function handleConfirmDeletePic() {
+    if (!pendingDeletePic) {
+      return;
+    }
+
+    deletePicMutation.mutate(pendingDeletePic.id, {
+      onSuccess: () => {
+        setPendingDeletePic(null);
+      },
+    });
+  }
+
+  function handlePicDeleteDialogOpenChange(open: boolean) {
+    if (!open && !deletePicMutation.isPending) {
+      setPendingDeletePic(null);
+    }
+  }
+
+  function handleConfirmDeleteUser() {
+    if (!pendingDeleteUser) {
+      return;
+    }
+
+    deleteUserMutation.mutate(pendingDeleteUser.id, {
+      onSuccess: () => {
+        setPendingDeleteUser(null);
+      },
+    });
+  }
+
+  function handleUserDeleteDialogOpenChange(open: boolean) {
+    if (!open && !deleteUserMutation.isPending) {
+      setPendingDeleteUser(null);
+    }
+  }
+
   return {
     activeTab,
     setActiveTab,
@@ -262,8 +357,20 @@ export function useDocumentCenterDashboard() {
     recentLastItem,
     recentRangeLabel: getRecentRangeLabel(recentRange),
     pendingDeleteDocument,
+    pendingDeleteDivision,
+    pendingDeleteSubdivision,
+    pendingDeletePic,
+    pendingDeleteUser,
     isDeleteDialogOpen: Boolean(pendingDeleteDocument),
     isDeletingDocument: deleteDocumentMutation.isPending,
+    isDivisionDeleteDialogOpen: Boolean(pendingDeleteDivision),
+    isSubdivisionDeleteDialogOpen: Boolean(pendingDeleteSubdivision),
+    isPicDeleteDialogOpen: Boolean(pendingDeletePic),
+    isUserDeleteDialogOpen: Boolean(pendingDeleteUser),
+    isDeletingDivision: deleteDivisionMutation.isPending,
+    isDeletingSubdivision: deleteSubdivisionMutation.isPending,
+    isDeletingPic: deletePicMutation.isPending,
+    isDeletingUser: deleteUserMutation.isPending,
     divisionPendingState: {
       isCreatingDivision: createDivisionMutation.isPending,
       savingDivisionId: updateDivisionMutation.isPending
@@ -345,13 +452,28 @@ export function useDocumentCenterDashboard() {
       onOpenChange: handleDeleteDialogOpenChange,
       onConfirm: handleConfirmDeleteDocument,
     },
+    divisionDeleteDialogActions: {
+      onOpenChange: handleDivisionDeleteDialogOpenChange,
+      onConfirm: handleConfirmDeleteDivision,
+    },
+    subdivisionDeleteDialogActions: {
+      onOpenChange: handleSubdivisionDeleteDialogOpenChange,
+      onConfirm: handleConfirmDeleteSubdivision,
+    },
+    picDeleteDialogActions: {
+      onOpenChange: handlePicDeleteDialogOpenChange,
+      onConfirm: handleConfirmDeletePic,
+    },
+    userDeleteDialogActions: {
+      onOpenChange: handleUserDeleteDialogOpenChange,
+      onConfirm: handleConfirmDeleteUser,
+    },
     divisionActions: {
       onCreateDivision: (name: string) =>
         createDivisionMutation.mutate({ name }),
       onUpdateDivision: (divisionId: string, name: string) =>
         updateDivisionMutation.mutate({ divisionId, values: { name } }),
-      onDeleteDivision: (divisionId: string) =>
-        deleteDivisionMutation.mutate(divisionId),
+      onDeleteDivision: setPendingDeleteDivision,
       onCreateSubdivision: (divisionId: string, name: string) =>
         createSubdivisionMutation.mutate({ divisionId, name }),
       onUpdateSubdivision: (
@@ -363,16 +485,22 @@ export function useDocumentCenterDashboard() {
           subdivisionId,
           values: { divisionId, name },
         }),
-      onDeleteSubdivision: (divisionId: string, subdivisionId: string) =>
-        deleteSubdivisionMutation.mutate({ divisionId, subdivisionId }),
+      onDeleteSubdivision: (
+        division: DocumentDivision,
+        subdivision: DocumentSubdivision,
+      ) =>
+        setPendingDeleteSubdivision({
+          divisionId: division.id,
+          divisionName: division.name,
+          subdivision,
+        }),
     },
     picActions: {
       onCreatePic: (divisionId: string, name: string) =>
         createPicMutation.mutate({ divisionId, name }),
       onUpdatePic: (picId: string, divisionId: string, name: string) =>
         updatePicMutation.mutate({ id: picId, divisionId, name }),
-      onDeletePic: (picId: string) =>
-        deletePicMutation.mutate(picId),
+      onDeletePic: setPendingDeletePic,
     },
     userActions: {
       onCreateUser: (payload: {
@@ -390,8 +518,7 @@ export function useDocumentCenterDashboard() {
         assignedDivisionIds: string[];
       }) =>
         updateUserMutation.mutate(payload),
-      onDeleteUser: (userId: string) =>
-        deleteUserMutation.mutate(userId),
+      onDeleteUser: setPendingDeleteUser,
     },
   };
 }

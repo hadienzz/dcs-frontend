@@ -12,23 +12,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import type { EnrichedDocumentRecord } from "@/types/document-center";
 
-interface DeleteDocumentDialogProps {
-  document: EnrichedDocumentRecord | null;
+interface DeleteEntityDialogProps {
   open: boolean;
+  entityLabel: string;
+  entityName?: string;
+  context?: string;
   isDeleting: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }
 
-export function DeleteDocumentDialog({
-  document,
+export function DeleteEntityDialog({
   open,
+  entityLabel,
+  entityName,
+  context,
   isDeleting,
   onOpenChange,
   onConfirm,
-}: DeleteDocumentDialogProps) {
+}: DeleteEntityDialogProps) {
+  const displayName = entityName ?? `this ${entityLabel}`;
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -37,17 +42,14 @@ export function DeleteDocumentDialog({
             <AlertTriangle className="size-5" />
           </div>
           <AlertDialogTitle className="text-xl font-semibold leading-tight text-foreground">
-            Are you sure you want to delete document{" "}
-            <span className="font-bold">
-              {document?.title ?? "this document"}
-            </span>?
+            Are you sure you want to delete {entityLabel}{" "}
+            <span className="font-bold">{displayName}</span>?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-sm leading-6 text-muted-foreground">
-            This will remove{" "}
-            <span className="font-semibold text-foreground">
-              {document?.title ?? "this document"}
-            </span>{" "}
-            from Document Center. This action cannot be undone.
+            This will remove {entityLabel}{" "}
+            <span className="font-semibold text-foreground">{displayName}</span>
+            {context ? ` ${context}` : ""} from Document Center. This action
+            cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -62,12 +64,12 @@ export function DeleteDocumentDialog({
             type="button"
             variant="destructive"
             onClick={onConfirm}
-            disabled={isDeleting || !document}
+            disabled={isDeleting || !entityName}
           >
             {isDeleting ? (
               <Loader2 data-icon="inline-start" className="animate-spin" />
             ) : null}
-            {isDeleting ? "Deleting..." : "Delete document"}
+            {isDeleting ? "Deleting..." : `Delete ${entityLabel}`}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
