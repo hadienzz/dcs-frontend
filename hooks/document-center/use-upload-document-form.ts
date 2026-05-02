@@ -7,10 +7,8 @@ import {
   getUploadDocumentValidationSchema,
   UPLOAD_DOCUMENT_INITIAL_VALUES,
 } from "@/schemas/document-center/upload-document-schema";
-import {
-  useUpdateDocumentMetadataMutation,
-  useUploadDocumentMutation,
-} from "@/hooks/document-center/use-document-center-data";
+import { useUpdateDocumentMetadataMutation } from "@/hooks/document-center/use-update-document-metadata";
+import { useUploadDocumentMutation } from "@/hooks/document-center/use-upload-document";
 import type {
   DocumentDivision,
   EnrichedDocumentRecord,
@@ -50,8 +48,14 @@ export function useUploadDocumentForm({
   documentToEdit,
   onCompleted,
 }: UseUploadDocumentFormOptions) {
-  const uploadDocumentMutation = useUploadDocumentMutation();
-  const updateDocumentMetadataMutation = useUpdateDocumentMetadataMutation();
+  const uploadDocumentMutation = useUploadDocumentMutation({
+    successMessage: null,
+    errorMessage: null,
+  });
+  const updateDocumentMetadataMutation = useUpdateDocumentMetadataMutation({
+    successMessage: null,
+    errorMessage: null,
+  });
   const isEditMode = Boolean(documentToEdit);
 
   const validationSchema = useMemo(

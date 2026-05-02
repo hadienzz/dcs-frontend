@@ -1,5 +1,5 @@
 import type { FormikProps } from "formik";
-import { FileUp, Save, X } from "lucide-react";
+import { FileUp, Loader2, Save, X } from "lucide-react";
 
 import { DivisionSelect } from "@/components/document-center/division-select";
 import { PICSelect } from "@/components/document-center/pic-select";
@@ -165,18 +165,31 @@ export function UploadDocumentForm({
 
       <div className="flex flex-wrap justify-end gap-3 border-t border-border/70 pt-5">
         {isEditMode && onCancelEdit ? (
-          <Button type="button" variant="outline" onClick={onCancelEdit}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancelEdit}
+            disabled={isSubmitting}
+          >
             <X data-icon="inline-start" />
             Cancel
           </Button>
         ) : null}
         <Button type="submit" disabled={isSubmitting}>
-          {isEditMode ? (
+          {isSubmitting ? (
+            <Loader2 data-icon="inline-start" className="animate-spin" />
+          ) : isEditMode ? (
             <Save data-icon="inline-start" />
           ) : (
             <FileUp data-icon="inline-start" />
           )}
-          {isEditMode ? "Save Metadata" : "Upload Document"}
+          {isSubmitting
+            ? isEditMode
+              ? "Saving..."
+              : "Uploading..."
+            : isEditMode
+              ? "Save Metadata"
+              : "Upload Document"}
         </Button>
       </div>
     </form>

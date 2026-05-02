@@ -2,6 +2,7 @@
 
 import { type ReactNode } from "react";
 import {
+  AlertTriangle,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -9,6 +10,7 @@ import {
   Folder,
   FolderOpen,
   LayoutDashboard,
+  Loader2,
   Plus,
   Search,
   ShieldCheck,
@@ -29,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   RECENT_RANGE_OPTIONS,
@@ -120,88 +123,117 @@ export function DocumentCenterClient() {
             </TabsList>
           </div>
 
-          {dashboard.isLoading ? (
-            <Card className="rounded-[24px] border-border/80 bg-background">
-              <CardContent className="p-8 text-sm text-muted-foreground">
-                Loading document center...
-              </CardContent>
-            </Card>
-          ) : null}
-
-          <TabsContent value="overview">
-            <OverviewPanel
-              recentDocuments={dashboard.store.recentDocuments}
-              recentPagination={dashboard.store.recentDocumentsPagination}
-              recentRange={dashboard.recentRange}
-              recentSort={dashboard.recentSort}
-              recentRangeLabel={dashboard.recentRangeLabel}
-              firstItem={dashboard.recentFirstItem}
-              lastItem={dashboard.recentLastItem}
-              {...dashboard.overviewActions}
-              documentActions={dashboard.documentActions}
+          {dashboard.loadErrorMessage ? (
+            <DocumentCenterErrorPanel
+              message={dashboard.loadErrorMessage}
+              isRetrying={dashboard.isRefreshing}
+              onRetry={dashboard.onRetryLoad}
             />
+          ) : (
+            <>
+          <TabsContent value="overview">
+            {dashboard.isLoading ? (
+              <DocumentCenterLoadingPanel variant="overview" />
+            ) : (
+              <OverviewPanel
+                recentDocuments={dashboard.store.recentDocuments}
+                recentPagination={dashboard.store.recentDocumentsPagination}
+                recentRange={dashboard.recentRange}
+                recentSort={dashboard.recentSort}
+                recentRangeLabel={dashboard.recentRangeLabel}
+                firstItem={dashboard.recentFirstItem}
+                lastItem={dashboard.recentLastItem}
+                {...dashboard.overviewActions}
+                documentActions={dashboard.documentActions}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="center">
-            <DocumentCenterPanel
-              divisions={dashboard.divisions}
-              documents={dashboard.store.documents}
-              filters={dashboard.filters}
-              subdivisionOptions={dashboard.filterSubdivisionOptions}
-              picOptions={dashboard.filterPicOptions}
-              driveDivisionId={dashboard.driveDivisionId}
-              driveSubdivisionId={dashboard.driveSubdivisionId}
-              activeDriveDivision={dashboard.activeDriveDivision}
-              activeDriveSubdivision={dashboard.activeDriveSubdivision}
-              viewMode={dashboard.documentViewMode}
-              onViewModeChange={dashboard.setDocumentViewMode}
-              {...dashboard.documentCenterActions}
-              documentActions={dashboard.documentActions}
-            />
+            {dashboard.isLoading ? (
+              <DocumentCenterLoadingPanel variant="center" />
+            ) : (
+              <DocumentCenterPanel
+                divisions={dashboard.divisions}
+                documents={dashboard.store.documents}
+                filters={dashboard.filters}
+                subdivisionOptions={dashboard.filterSubdivisionOptions}
+                picOptions={dashboard.filterPicOptions}
+                driveDivisionId={dashboard.driveDivisionId}
+                driveSubdivisionId={dashboard.driveSubdivisionId}
+                activeDriveDivision={dashboard.activeDriveDivision}
+                activeDriveSubdivision={dashboard.activeDriveSubdivision}
+                viewMode={dashboard.documentViewMode}
+                onViewModeChange={dashboard.setDocumentViewMode}
+                {...dashboard.documentCenterActions}
+                documentActions={dashboard.documentActions}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="upload">
-            <SectionCard
-              eyebrow="Document upload"
-              title={
-                dashboard.editingDocument ? "Edit Metadata" : "Upload Document"
-              }
-              description="Upload documents into a Division -> Subdivision -> Document structure."
-            >
-              <UploadDocumentForm
-                formik={dashboard.uploadForm.formik}
-                divisions={dashboard.divisions}
-                subdivisionOptions={dashboard.uploadForm.subdivisionOptions}
-                picOptions={dashboard.uploadForm.picOptions}
-                isSubmitting={dashboard.uploadForm.isSubmitting}
-                isEditMode={dashboard.uploadForm.isEditMode}
-                onDivisionChange={dashboard.uploadForm.handleDivisionChange}
-                onCancelEdit={dashboard.uploadActions.onCancelEdit}
-              />
-            </SectionCard>
+            {dashboard.isLoading ? (
+              <DocumentCenterLoadingPanel variant="form" />
+            ) : (
+              <SectionCard
+                eyebrow="Document upload"
+                title={
+                  dashboard.editingDocument ? "Edit Metadata" : "Upload Document"
+                }
+                description="Upload documents into a Division -> Subdivision -> Document structure."
+              >
+                <UploadDocumentForm
+                  formik={dashboard.uploadForm.formik}
+                  divisions={dashboard.divisions}
+                  subdivisionOptions={dashboard.uploadForm.subdivisionOptions}
+                  picOptions={dashboard.uploadForm.picOptions}
+                  isSubmitting={dashboard.uploadForm.isSubmitting}
+                  isEditMode={dashboard.uploadForm.isEditMode}
+                  onDivisionChange={dashboard.uploadForm.handleDivisionChange}
+                  onCancelEdit={dashboard.uploadActions.onCancelEdit}
+                />
+              </SectionCard>
+            )}
           </TabsContent>
 
           <TabsContent value="divisions">
-            <DivisionManagementPanel
-              divisions={dashboard.divisions}
-              {...dashboard.divisionActions}
-            />
+            {dashboard.isLoading ? (
+              <DocumentCenterLoadingPanel variant="management" />
+            ) : (
+              <DivisionManagementPanel
+                divisions={dashboard.divisions}
+                pendingState={dashboard.divisionPendingState}
+                {...dashboard.divisionActions}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="pic">
-            <PICManagementPanel
-              divisions={dashboard.divisions}
-              {...dashboard.picActions}
-            />
+            {dashboard.isLoading ? (
+              <DocumentCenterLoadingPanel variant="management" />
+            ) : (
+              <PICManagementPanel
+                divisions={dashboard.divisions}
+                pendingState={dashboard.picPendingState}
+                {...dashboard.picActions}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="users">
-            <UserManagementPanel
-              divisions={dashboard.divisions}
-              users={dashboard.store.users}
-              {...dashboard.userActions}
-            />
+            {dashboard.isLoading ? (
+              <DocumentCenterLoadingPanel variant="management" />
+            ) : (
+              <UserManagementPanel
+                divisions={dashboard.divisions}
+                users={dashboard.store.users}
+                pendingState={dashboard.userPendingState}
+                {...dashboard.userActions}
+              />
+            )}
           </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
 
@@ -273,6 +305,106 @@ function SectionCard({
       </CardHeader>
       <CardContent className="p-6">{children}</CardContent>
     </Card>
+  );
+}
+
+function DocumentCenterLoadingPanel({
+  variant,
+}: {
+  variant: "overview" | "center" | "form" | "management";
+}) {
+  const skeletonCards = variant === "form" ? 4 : variant === "management" ? 3 : 6;
+
+  return (
+    <SectionCard
+      eyebrow="Loading"
+      title="Preparing document workspace"
+      description="Fetching the latest document center data."
+      action={
+        <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-background px-3 py-2 text-xs font-medium text-muted-foreground">
+          <Loader2 className="size-3.5 animate-spin" />
+          Syncing
+        </div>
+      }
+    >
+      <div className="space-y-5" aria-busy="true" aria-live="polite">
+        {variant !== "management" ? (
+          <div className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+            <Skeleton className="h-11 rounded-xl" />
+            <Skeleton className="h-11 rounded-xl" />
+            <Skeleton className="h-11 rounded-xl" />
+          </div>
+        ) : null}
+
+        <div
+          className={
+            variant === "form"
+              ? "grid gap-5 lg:grid-cols-2"
+              : "grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+          }
+        >
+          {Array.from({ length: skeletonCards }).map((_, index) => (
+            <div
+              key={index}
+              className="rounded-[24px] border border-border/70 bg-background p-5"
+            >
+              <div className="flex gap-3">
+                <Skeleton className="size-11 rounded-[14px]" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+              <div className="mt-5 space-y-2">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-5/6" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+              <div className="mt-5 flex gap-2">
+                <Skeleton className="h-9 w-24 rounded-md" />
+                <Skeleton className="h-9 w-20 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function DocumentCenterErrorPanel({
+  message,
+  isRetrying,
+  onRetry,
+}: {
+  message: string;
+  isRetrying: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <SectionCard
+      eyebrow="Unable to load"
+      title="Document Center needs a refresh"
+      description={message}
+      action={
+        <Button type="button" onClick={onRetry} disabled={isRetrying}>
+          {isRetrying ? (
+            <Loader2 data-icon="inline-start" className="animate-spin" />
+          ) : null}
+          {isRetrying ? "Retrying..." : "Try again"}
+        </Button>
+      }
+    >
+      <div className="flex min-h-[220px] flex-col justify-center rounded-[24px] border border-destructive/15 bg-destructive/[0.04] p-6">
+        <div className="mb-4 flex size-12 items-center justify-center rounded-[16px] border border-destructive/20 bg-background text-destructive">
+          <AlertTriangle className="size-5" />
+        </div>
+        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+          Data belum bisa ditampilkan. Coba ulangi; kalau masih gagal, hubungi
+          admin dengan konteks halaman ini.
+        </p>
+      </div>
+    </SectionCard>
   );
 }
 
@@ -655,6 +787,7 @@ function FolderButton({
 
 function DivisionManagementPanel({
   divisions,
+  pendingState,
   onCreateDivision,
   onUpdateDivision,
   onDeleteDivision,
@@ -663,6 +796,14 @@ function DivisionManagementPanel({
   onDeleteSubdivision,
 }: {
   divisions: DocumentDivision[];
+  pendingState: {
+    isCreatingDivision: boolean;
+    savingDivisionId?: string;
+    deletingDivisionId?: string;
+    creatingSubdivisionDivisionId?: string;
+    savingSubdivisionId?: string;
+    deletingSubdivisionId?: string;
+  };
   onCreateDivision: (name: string) => void;
   onUpdateDivision: (divisionId: string, name: string) => void;
   onDeleteDivision: (divisionId: string) => void;
@@ -679,6 +820,7 @@ function DivisionManagementPanel({
     onUpdateDivision,
     onCreateSubdivision,
   });
+  const canCreateDivision = Boolean(state.newDivisionName.trim());
 
   return (
     <SectionCard
@@ -699,9 +841,16 @@ function DivisionManagementPanel({
             placeholder="New division"
             className="min-w-[220px]"
           />
-          <Button type="submit">
-            <Plus data-icon="inline-start" />
-            Add
+          <Button
+            type="submit"
+            disabled={pendingState.isCreatingDivision || !canCreateDivision}
+          >
+            {pendingState.isCreatingDivision ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : (
+              <Plus data-icon="inline-start" />
+            )}
+            {pendingState.isCreatingDivision ? "Adding..." : "Add"}
           </Button>
         </form>
       }
@@ -709,6 +858,9 @@ function DivisionManagementPanel({
       <div className="space-y-4">
         {divisions.map((division) => {
           const divisionDraft = state.getDivisionDraft(division);
+          const isSavingDivision = pendingState.savingDivisionId === division.id;
+          const isDeletingDivision =
+            pendingState.deletingDivisionId === division.id;
 
           return (
             <div
@@ -733,9 +885,16 @@ function DivisionManagementPanel({
                     type="button"
                     variant="outline"
                     onClick={() => state.saveDivision(division.id, divisionDraft)}
-                    disabled={!divisionDraft.trim()}
+                    disabled={
+                      isSavingDivision ||
+                      isDeletingDivision ||
+                      !divisionDraft.trim()
+                    }
                   >
-                    Save
+                    {isSavingDivision ? (
+                      <Loader2 data-icon="inline-start" className="animate-spin" />
+                    ) : null}
+                    {isSavingDivision ? "Saving..." : "Save"}
                   </Button>
                   <Button
                     type="button"
@@ -743,9 +902,14 @@ function DivisionManagementPanel({
                     size="icon"
                     className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => onDeleteDivision(division.id)}
+                    disabled={isDeletingDivision || isSavingDivision}
                     aria-label={`Delete ${division.name}`}
                   >
-                    <Trash2 />
+                    {isDeletingDivision ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Trash2 />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -753,6 +917,10 @@ function DivisionManagementPanel({
               <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
                 {division.subdivisions.map((subdivision) => {
                   const draft = state.getSubdivisionDraft(subdivision);
+                  const isSavingSubdivision =
+                    pendingState.savingSubdivisionId === subdivision.id;
+                  const isDeletingSubdivision =
+                    pendingState.deletingSubdivisionId === subdivision.id;
 
                   return (
                     <div
@@ -779,9 +947,19 @@ function DivisionManagementPanel({
                               draft,
                             )
                           }
-                          disabled={!draft.trim()}
+                          disabled={
+                            isSavingSubdivision ||
+                            isDeletingSubdivision ||
+                            !draft.trim()
+                          }
                         >
-                          Save
+                          {isSavingSubdivision ? (
+                            <Loader2
+                              data-icon="inline-start"
+                              className="animate-spin"
+                            />
+                          ) : null}
+                          {isSavingSubdivision ? "Saving..." : "Save"}
                         </Button>
                         <Button
                           type="button"
@@ -791,15 +969,28 @@ function DivisionManagementPanel({
                           onClick={() =>
                             onDeleteSubdivision(division.id, subdivision.id)
                           }
+                          disabled={isDeletingSubdivision || isSavingSubdivision}
                           aria-label={`Delete ${subdivision.name}`}
                         >
-                          <Trash2 />
+                          {isDeletingSubdivision ? (
+                            <Loader2 className="animate-spin" />
+                          ) : (
+                            <Trash2 />
+                          )}
                         </Button>
                       </div>
                     </div>
                   );
                 })}
 
+                {(() => {
+                  const newSubdivisionName = state.getNewSubdivisionName(
+                    division.id,
+                  );
+                  const isCreatingSubdivision =
+                    pendingState.creatingSubdivisionDivisionId === division.id;
+
+                  return (
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
@@ -808,7 +999,7 @@ function DivisionManagementPanel({
                   className="flex flex-col gap-2 sm:flex-row"
                 >
                   <Input
-                    value={state.getNewSubdivisionName(division.id)}
+                    value={newSubdivisionName}
                     onChange={(event) =>
                       state.setNewSubdivisionName(
                         division.id,
@@ -817,11 +1008,26 @@ function DivisionManagementPanel({
                     }
                     placeholder={`New subdivision for ${division.name}`}
                   />
-                  <Button type="submit" variant="outline">
-                    <Plus data-icon="inline-start" />
-                    Add Subdivision
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    disabled={
+                      isCreatingSubdivision || !newSubdivisionName.trim()
+                    }
+                  >
+                    {isCreatingSubdivision ? (
+                      <Loader2
+                        data-icon="inline-start"
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <Plus data-icon="inline-start" />
+                    )}
+                    {isCreatingSubdivision ? "Adding..." : "Add Subdivision"}
                   </Button>
                 </form>
+                  );
+                })()}
               </div>
             </div>
           );
@@ -833,11 +1039,17 @@ function DivisionManagementPanel({
 
 function PICManagementPanel({
   divisions,
+  pendingState,
   onCreatePic,
   onUpdatePic,
   onDeletePic,
 }: {
   divisions: DocumentDivision[];
+  pendingState: {
+    isCreatingPic: boolean;
+    savingPicId?: string;
+    deletingPicId?: string;
+  };
   onCreatePic: (divisionId: string, name: string) => void;
   onUpdatePic: (picId: string, divisionId: string, name: string) => void;
   onDeletePic: (picId: string) => void;
@@ -847,6 +1059,9 @@ function PICManagementPanel({
     onCreatePic,
     onUpdatePic,
   });
+  const canCreatePic = Boolean(
+    state.newPic.name.trim() && (state.newPic.divisionId || divisions[0]?.id),
+  );
 
   return (
     <SectionCard
@@ -873,9 +1088,16 @@ function PICManagementPanel({
             divisions={divisions}
             onChange={state.setNewPicDivisionId}
           />
-          <Button type="submit">
-            <Plus data-icon="inline-start" />
-            Add
+          <Button
+            type="submit"
+            disabled={pendingState.isCreatingPic || !canCreatePic}
+          >
+            {pendingState.isCreatingPic ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : (
+              <Plus data-icon="inline-start" />
+            )}
+            {pendingState.isCreatingPic ? "Adding..." : "Add"}
           </Button>
         </form>
       }
@@ -884,6 +1106,8 @@ function PICManagementPanel({
         <div className="grid gap-3 lg:grid-cols-2">
           {state.people.map((person) => {
             const draft = state.getPicDraft(person);
+            const isSavingPic = pendingState.savingPicId === person.id;
+            const isDeletingPic = pendingState.deletingPicId === person.id;
 
             return (
               <div
@@ -913,9 +1137,17 @@ function PICManagementPanel({
                       onClick={() =>
                         state.updatePic(person.id, draft.divisionId, draft.name)
                       }
-                      disabled={!draft.name.trim() || !draft.divisionId}
+                      disabled={
+                        isSavingPic ||
+                        isDeletingPic ||
+                        !draft.name.trim() ||
+                        !draft.divisionId
+                      }
                     >
-                      Save
+                      {isSavingPic ? (
+                        <Loader2 data-icon="inline-start" className="animate-spin" />
+                      ) : null}
+                      {isSavingPic ? "Saving..." : "Save"}
                     </Button>
                     <Button
                       type="button"
@@ -923,9 +1155,14 @@ function PICManagementPanel({
                       size="icon"
                       className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => onDeletePic(person.id)}
+                      disabled={isDeletingPic || isSavingPic}
                       aria-label={`Delete ${person.name}`}
                     >
-                      <Trash2 />
+                      {isDeletingPic ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <Trash2 />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -947,12 +1184,18 @@ function PICManagementPanel({
 function UserManagementPanel({
   divisions,
   users,
+  pendingState,
   onCreateUser,
   onUpdateUser,
   onDeleteUser,
 }: {
   divisions: DocumentDivision[];
   users: DocumentAccount[];
+  pendingState: {
+    isCreatingUser: boolean;
+    savingUserId?: string;
+    deletingUserId?: string;
+  };
   onCreateUser: (payload: {
     name: string;
     username: string;
@@ -972,6 +1215,9 @@ function UserManagementPanel({
     onCreateUser,
     onUpdateUser,
   });
+  const canCreateUser = Boolean(
+    state.newUser.name.trim() && state.newUser.username.trim(),
+  );
 
   return (
     <SectionCard
@@ -1012,15 +1258,24 @@ function UserManagementPanel({
             state.setNewUserField("assignedDivisionId", assignedDivisionId)
           }
         />
-        <Button type="submit">
-          <Plus data-icon="inline-start" />
-          Create
+        <Button
+          type="submit"
+          disabled={pendingState.isCreatingUser || !canCreateUser}
+        >
+          {pendingState.isCreatingUser ? (
+            <Loader2 data-icon="inline-start" className="animate-spin" />
+          ) : (
+            <Plus data-icon="inline-start" />
+          )}
+          {pendingState.isCreatingUser ? "Creating..." : "Create"}
         </Button>
       </form>
 
       <div className="space-y-3">
         {users.map((user) => {
           const draft = state.getUserDraft(user);
+          const isSavingUser = pendingState.savingUserId === user.id;
+          const isDeletingUser = pendingState.deletingUserId === user.id;
 
           return (
             <div
@@ -1073,9 +1328,17 @@ function UserManagementPanel({
                   type="button"
                   variant="outline"
                   onClick={() => state.updateUser(user.id, draft)}
-                  disabled={!draft.name.trim() || !draft.username.trim()}
+                  disabled={
+                    isSavingUser ||
+                    isDeletingUser ||
+                    !draft.name.trim() ||
+                    !draft.username.trim()
+                  }
                 >
-                  Save
+                  {isSavingUser ? (
+                    <Loader2 data-icon="inline-start" className="animate-spin" />
+                  ) : null}
+                  {isSavingUser ? "Saving..." : "Save"}
                 </Button>
                 <Button
                   type="button"
@@ -1083,9 +1346,14 @@ function UserManagementPanel({
                   size="icon"
                   className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={() => onDeleteUser(user.id)}
+                  disabled={isDeletingUser || isSavingUser}
                   aria-label={`Delete ${user.name}`}
                 >
-                  <Trash2 />
+                  {isDeletingUser ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Trash2 />
+                  )}
                 </Button>
               </div>
             </div>

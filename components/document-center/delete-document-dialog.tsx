@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 import {
   AlertDialog,
@@ -61,6 +61,9 @@ export function DeleteDocumentDialog({
             onClick={onConfirm}
             disabled={isDeleting || !document}
           >
+            {isDeleting ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : null}
             {isDeleting ? "Deleting..." : "Delete document"}
           </Button>
         </AlertDialogFooter>

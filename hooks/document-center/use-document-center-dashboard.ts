@@ -3,13 +3,20 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import {
-  useDeleteDocumentMutation,
-  useDivisionMutations,
-  useDocumentCenterData,
-  usePicMutations,
-  useUserMutations,
-} from "@/hooks/document-center/use-document-center-data";
+import { useCreateDivisionMutation } from "@/hooks/document-center/use-create-division";
+import { useCreatePicMutation } from "@/hooks/document-center/use-create-pic";
+import { useCreateSubdivisionMutation } from "@/hooks/document-center/use-create-subdivision";
+import { useCreateUserMutation } from "@/hooks/document-center/use-create-user";
+import { useDeleteDivisionMutation } from "@/hooks/document-center/use-delete-division";
+import { useDeleteDocumentMutation } from "@/hooks/document-center/use-delete-document";
+import { useDeletePicMutation } from "@/hooks/document-center/use-delete-pic";
+import { useDeleteSubdivisionMutation } from "@/hooks/document-center/use-delete-subdivision";
+import { useDeleteUserMutation } from "@/hooks/document-center/use-delete-user";
+import { useDocumentCenterData } from "@/hooks/document-center/use-get-document-center-store";
+import { useUpdateDivisionMutation } from "@/hooks/document-center/use-update-division";
+import { useUpdatePicMutation } from "@/hooks/document-center/use-update-pic";
+import { useUpdateSubdivisionMutation } from "@/hooks/document-center/use-update-subdivision";
+import { useUpdateUserMutation } from "@/hooks/document-center/use-update-user";
 import { useUploadDocumentForm } from "@/hooks/document-center/use-upload-document-form";
 import { EMPTY_DOCUMENT_CENTER_STORE } from "@/types/document-center";
 import type {
@@ -75,10 +82,6 @@ function getRecentRangeLabel(range: RecentDocumentRange) {
   );
 }
 
-function notifyMutationError(error: unknown, fallbackMessage: string) {
-  toast.error(getErrorMessage(error, fallbackMessage));
-}
-
 export function useDocumentCenterDashboard() {
   const [activeTab, setActiveTab] = useState<DocumentCenterTab>("overview");
   const [documentViewMode, setDocumentViewMode] =
@@ -115,12 +118,27 @@ export function useDocumentCenterDashboard() {
       recentSort,
     ],
   );
-  const { data: store = EMPTY_DOCUMENT_CENTER_STORE, isLoading } =
-    useDocumentCenterData(documentCenterQuery);
+  const {
+    data: store = EMPTY_DOCUMENT_CENTER_STORE,
+    error: loadError,
+    isError: isLoadError,
+    isFetching,
+    isLoading,
+    refetch,
+  } = useDocumentCenterData(documentCenterQuery);
   const deleteDocumentMutation = useDeleteDocumentMutation();
-  const divisionMutations = useDivisionMutations();
-  const picMutations = usePicMutations();
-  const userMutations = useUserMutations();
+  const createDivisionMutation = useCreateDivisionMutation();
+  const updateDivisionMutation = useUpdateDivisionMutation();
+  const deleteDivisionMutation = useDeleteDivisionMutation();
+  const createSubdivisionMutation = useCreateSubdivisionMutation();
+  const updateSubdivisionMutation = useUpdateSubdivisionMutation();
+  const deleteSubdivisionMutation = useDeleteSubdivisionMutation();
+  const createPicMutation = useCreatePicMutation();
+  const updatePicMutation = useUpdatePicMutation();
+  const deletePicMutation = useDeletePicMutation();
+  const createUserMutation = useCreateUserMutation();
+  const updateUserMutation = useUpdateUserMutation();
+  const deleteUserMutation = useDeleteUserMutation();
 
   const divisions = store.divisions;
   const filterSubdivisionOptions = useMemo(
@@ -199,11 +217,8 @@ export function useDocumentCenterDashboard() {
 
     deleteDocumentMutation.mutate(pendingDeleteDocument.id, {
       onSuccess: () => {
-        toast.success("Dokumen berhasil dihapus.");
         setPendingDeleteDocument(null);
       },
-      onError: (error) =>
-        notifyMutationError(error, "Dokumen belum bisa dihapus."),
     });
   }
 
@@ -217,6 +232,16 @@ export function useDocumentCenterDashboard() {
     activeTab,
     setActiveTab,
     isLoading,
+    isRefreshing: isFetching && !isLoading,
+    loadErrorMessage: isLoadError
+      ? getErrorMessage(
+          loadError,
+          "Document center belum bisa dimuat. Coba lagi sebentar.",
+        )
+      : undefined,
+    onRetryLoad: () => {
+      refetch();
+    },
     store,
     divisions,
     filters,
@@ -239,6 +264,42 @@ export function useDocumentCenterDashboard() {
     pendingDeleteDocument,
     isDeleteDialogOpen: Boolean(pendingDeleteDocument),
     isDeletingDocument: deleteDocumentMutation.isPending,
+    divisionPendingState: {
+      isCreatingDivision: createDivisionMutation.isPending,
+      savingDivisionId: updateDivisionMutation.isPending
+        ? updateDivisionMutation.variables?.divisionId
+        : undefined,
+      deletingDivisionId: deleteDivisionMutation.isPending
+        ? deleteDivisionMutation.variables
+        : undefined,
+      creatingSubdivisionDivisionId: createSubdivisionMutation.isPending
+        ? createSubdivisionMutation.variables?.divisionId
+        : undefined,
+      savingSubdivisionId: updateSubdivisionMutation.isPending
+        ? updateSubdivisionMutation.variables?.subdivisionId
+        : undefined,
+      deletingSubdivisionId: deleteSubdivisionMutation.isPending
+        ? deleteSubdivisionMutation.variables?.subdivisionId
+        : undefined,
+    },
+    picPendingState: {
+      isCreatingPic: createPicMutation.isPending,
+      savingPicId: updatePicMutation.isPending
+        ? updatePicMutation.variables?.id
+        : undefined,
+      deletingPicId: deletePicMutation.isPending
+        ? deletePicMutation.variables
+        : undefined,
+    },
+    userPendingState: {
+      isCreatingUser: createUserMutation.isPending,
+      savingUserId: updateUserMutation.isPending
+        ? updateUserMutation.variables?.id
+        : undefined,
+      deletingUserId: deleteUserMutation.isPending
+        ? deleteUserMutation.variables
+        : undefined,
+    },
     documentActions: {
       onView: handleViewDocument,
       onDownload: handleDownloadDocument,
@@ -286,86 +347,32 @@ export function useDocumentCenterDashboard() {
     },
     divisionActions: {
       onCreateDivision: (name: string) =>
-        divisionMutations.createDivision.mutate(
-          { name },
-          {
-            onSuccess: () => toast.success("Divisi berhasil ditambahkan."),
-            onError: (error) =>
-              notifyMutationError(error, "Divisi belum bisa ditambahkan."),
-          },
-        ),
+        createDivisionMutation.mutate({ name }),
       onUpdateDivision: (divisionId: string, name: string) =>
-        divisionMutations.updateDivision.mutate(
-          { divisionId, values: { name } },
-          {
-            onSuccess: () => toast.success("Divisi berhasil diperbarui."),
-            onError: (error) =>
-              notifyMutationError(error, "Divisi belum bisa diperbarui."),
-          },
-        ),
+        updateDivisionMutation.mutate({ divisionId, values: { name } }),
       onDeleteDivision: (divisionId: string) =>
-        divisionMutations.deleteDivision.mutate(divisionId, {
-          onSuccess: () => toast.success("Divisi berhasil dihapus."),
-          onError: (error) =>
-            notifyMutationError(error, "Divisi belum bisa dihapus."),
-        }),
+        deleteDivisionMutation.mutate(divisionId),
       onCreateSubdivision: (divisionId: string, name: string) =>
-        divisionMutations.createSubdivision.mutate(
-          { divisionId, name },
-          {
-            onSuccess: () => toast.success("Subdivisi berhasil ditambahkan."),
-            onError: (error) =>
-              notifyMutationError(error, "Subdivisi belum bisa ditambahkan."),
-          },
-        ),
+        createSubdivisionMutation.mutate({ divisionId, name }),
       onUpdateSubdivision: (
         divisionId: string,
         subdivisionId: string,
         name: string,
       ) =>
-        divisionMutations.updateSubdivision.mutate(
-          { subdivisionId, values: { divisionId, name } },
-          {
-            onSuccess: () => toast.success("Subdivisi berhasil diperbarui."),
-            onError: (error) =>
-              notifyMutationError(error, "Subdivisi belum bisa diperbarui."),
-          },
-        ),
+        updateSubdivisionMutation.mutate({
+          subdivisionId,
+          values: { divisionId, name },
+        }),
       onDeleteSubdivision: (divisionId: string, subdivisionId: string) =>
-        divisionMutations.deleteSubdivision.mutate(
-          { divisionId, subdivisionId },
-          {
-            onSuccess: () => toast.success("Subdivisi berhasil dihapus."),
-            onError: (error) =>
-              notifyMutationError(error, "Subdivisi belum bisa dihapus."),
-          },
-        ),
+        deleteSubdivisionMutation.mutate({ divisionId, subdivisionId }),
     },
     picActions: {
       onCreatePic: (divisionId: string, name: string) =>
-        picMutations.createPic.mutate(
-          { divisionId, name },
-          {
-            onSuccess: () => toast.success("PIC berhasil ditambahkan."),
-            onError: (error) =>
-              notifyMutationError(error, "PIC belum bisa ditambahkan."),
-          },
-        ),
+        createPicMutation.mutate({ divisionId, name }),
       onUpdatePic: (picId: string, divisionId: string, name: string) =>
-        picMutations.updatePic.mutate(
-          { id: picId, divisionId, name },
-          {
-            onSuccess: () => toast.success("PIC berhasil diperbarui."),
-            onError: (error) =>
-              notifyMutationError(error, "PIC belum bisa diperbarui."),
-          },
-        ),
+        updatePicMutation.mutate({ id: picId, divisionId, name }),
       onDeletePic: (picId: string) =>
-        picMutations.deletePic.mutate(picId, {
-          onSuccess: () => toast.success("PIC berhasil dihapus."),
-          onError: (error) =>
-            notifyMutationError(error, "PIC belum bisa dihapus."),
-        }),
+        deletePicMutation.mutate(picId),
     },
     userActions: {
       onCreateUser: (payload: {
@@ -374,11 +381,7 @@ export function useDocumentCenterDashboard() {
         role: DocumentUserRole;
         assignedDivisionIds: string[];
       }) =>
-        userMutations.createUser.mutate(payload, {
-          onSuccess: () => toast.success("User berhasil dibuat."),
-          onError: (error) =>
-            notifyMutationError(error, "User belum bisa dibuat."),
-        }),
+        createUserMutation.mutate(payload),
       onUpdateUser: (payload: {
         id: string;
         name: string;
@@ -386,17 +389,9 @@ export function useDocumentCenterDashboard() {
         role: DocumentUserRole;
         assignedDivisionIds: string[];
       }) =>
-        userMutations.updateUser.mutate(payload, {
-          onSuccess: () => toast.success("User berhasil diperbarui."),
-          onError: (error) =>
-            notifyMutationError(error, "User belum bisa diperbarui."),
-        }),
+        updateUserMutation.mutate(payload),
       onDeleteUser: (userId: string) =>
-        userMutations.deleteUser.mutate(userId, {
-          onSuccess: () => toast.success("User berhasil dihapus."),
-          onError: (error) =>
-            notifyMutationError(error, "User belum bisa dihapus."),
-        }),
+        deleteUserMutation.mutate(userId),
     },
   };
 }
