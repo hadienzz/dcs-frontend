@@ -27,6 +27,7 @@ import { DocumentTable } from "@/components/document-center/document-table";
 import { PICSelect } from "@/components/document-center/pic-select";
 import { SubdivisionSelect } from "@/components/document-center/subdivision-select";
 import { UploadDocumentForm } from "@/components/document-center/upload-document-form";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -821,12 +822,30 @@ function DivisionManagementPanel({
     onCreateSubdivision,
   });
   const canCreateDivision = Boolean(state.newDivisionName.trim());
+  const selectedDivision =
+    divisions.find((division) => division.id === state.selectedDivisionId) ??
+    divisions[0];
+  const selectedDivisionDraft = selectedDivision
+    ? state.getDivisionDraft(selectedDivision)
+    : "";
+  const isSavingDivision = selectedDivision
+    ? pendingState.savingDivisionId === selectedDivision.id
+    : false;
+  const isDeletingDivision = selectedDivision
+    ? pendingState.deletingDivisionId === selectedDivision.id
+    : false;
+  const newSubdivisionName = selectedDivision
+    ? state.getNewSubdivisionName(selectedDivision.id)
+    : "";
+  const isCreatingSubdivision = selectedDivision
+    ? pendingState.creatingSubdivisionDivisionId === selectedDivision.id
+    : false;
 
   return (
     <SectionCard
       eyebrow="Superadmin"
       title="Division Management"
-      description="Create, edit, and delete divisions with nested subdivisions."
+      description="Manage one division at a time, then add subdivisions from the division detail."
       action={
         <form
           onSubmit={(event) => {
@@ -838,7 +857,7 @@ function DivisionManagementPanel({
           <Input
             value={state.newDivisionName}
             onChange={(event) => state.setNewDivisionName(event.target.value)}
-            placeholder="New division"
+            placeholder="New division name"
             className="min-w-[220px]"
           />
           <Button
@@ -850,190 +869,335 @@ function DivisionManagementPanel({
             ) : (
               <Plus data-icon="inline-start" />
             )}
-            {pendingState.isCreatingDivision ? "Adding..." : "Add"}
+            {pendingState.isCreatingDivision ? "Creating..." : "Create"}
           </Button>
         </form>
       }
     >
-      <div className="space-y-4">
-        {divisions.map((division) => {
-          const divisionDraft = state.getDivisionDraft(division);
-          const isSavingDivision = pendingState.savingDivisionId === division.id;
-          const isDeletingDivision =
-            pendingState.deletingDivisionId === division.id;
+      {divisions.length > 0 ? (
+        <div className="grid gap-5 lg:grid-cols-[minmax(260px,360px)_1fr]">
+          <aside className="rounded-[24px] border border-border/80 bg-muted/[0.08] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Divisions
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Open one detail at a time
+                </p>
+              </div>
+              <Badge variant="neutral">{divisions.length}</Badge>
+            </div>
 
-          return (
-            <div
-              key={division.id}
-              className="rounded-[24px] border border-border/80 bg-muted/[0.08] p-4"
-            >
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-                  <Input
-                    value={divisionDraft}
-                    onChange={(event) =>
-                      state.setDivisionDraft(division.id, event.target.value)
-                    }
-                    className="max-w-sm"
-                  />
-                  <Badge variant="neutral">
-                    {division.subdivisions.length} subdivisions
-                  </Badge>
-                </div>
-                <div className="flex gap-2">
-                  <Button
+            <div className="mt-4 max-h-[560px] space-y-2 overflow-y-auto pr-1">
+              {divisions.map((division) => {
+                const isActive = selectedDivision?.id === division.id;
+
+                return (
+                  <button
+                    key={division.id}
                     type="button"
-                    variant="outline"
-                    onClick={() => state.saveDivision(division.id, divisionDraft)}
-                    disabled={
-                      isSavingDivision ||
-                      isDeletingDivision ||
-                      !divisionDraft.trim()
-                    }
-                  >
-                    {isSavingDivision ? (
-                      <Loader2 data-icon="inline-start" className="animate-spin" />
-                    ) : null}
-                    {isSavingDivision ? "Saving..." : "Save"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => onDeleteDivision(division.id)}
-                    disabled={isDeletingDivision || isSavingDivision}
-                    aria-label={`Delete ${division.name}`}
-                  >
-                    {isDeletingDivision ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <Trash2 />
+                    onClick={() => state.selectDivision(division.id)}
+                    className={cn(
+                      "group flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition hover:border-primary/25 hover:bg-background",
+                      isActive
+                        ? "border-primary/30 bg-background shadow-[0_16px_28px_-28px_rgba(182,37,42,0.55)]"
+                        : "border-transparent bg-transparent",
                     )}
-                  </Button>
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    <div
+                      className={cn(
+                        "flex size-10 shrink-0 items-center justify-center rounded-[14px] border",
+                        isActive
+                          ? "border-primary/20 bg-primary/[0.08] text-primary"
+                          : "border-border/70 bg-background text-muted-foreground",
+                      )}
+                    >
+                      <Building2 className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {division.name}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {division.subdivisions.length} subdivisions -{" "}
+                        {division.documentCount ?? 0} documents
+                      </p>
+                    </div>
+                    <ChevronRight
+                      className={cn(
+                        "size-4 shrink-0 text-muted-foreground transition group-hover:text-primary",
+                        isActive ? "text-primary" : "",
+                      )}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+
+          {selectedDivision ? (
+            <div className="overflow-hidden rounded-[24px] border border-border/80 bg-background shadow-[0_18px_36px_-32px_rgba(15,23,42,0.34)]">
+              <div className="border-b border-border/70 bg-[linear-gradient(180deg,rgba(182,37,42,0.055),rgba(182,37,42,0.012)_72%,rgba(182,37,42,0)_100%)] p-5">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-[16px] border border-primary/15 bg-primary/[0.08] text-primary">
+                      <FolderOpen className="size-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                        Division detail
+                      </p>
+                      <h3 className="truncate text-xl font-semibold text-foreground">
+                        {selectedDivision.name}
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="neutral">
+                      {selectedDivision.subdivisions.length} subdivisions
+                    </Badge>
+                    <Badge variant="outline">
+                      {selectedDivision.documentCount ?? 0} documents
+                    </Badge>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
-                {division.subdivisions.map((subdivision) => {
-                  const draft = state.getSubdivisionDraft(subdivision);
-                  const isSavingSubdivision =
-                    pendingState.savingSubdivisionId === subdivision.id;
-                  const isDeletingSubdivision =
-                    pendingState.deletingSubdivisionId === subdivision.id;
-
-                  return (
-                    <div
-                      key={subdivision.id}
-                      className="flex flex-col gap-2 rounded-2xl border border-border/70 bg-background p-3 sm:flex-row sm:items-center"
+              <div className="grid gap-5 p-5 xl:grid-cols-[0.92fr_1.08fr]">
+                <div className="space-y-4">
+                  <div className="rounded-2xl border border-border/80 bg-muted/[0.06] p-4">
+                    <label
+                      htmlFor="divisionDetailName"
+                      className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground"
                     >
-                      <Input
-                        value={draft}
-                        onChange={(event) =>
-                          state.setSubdivisionDraft(
-                            subdivision.id,
-                            event.target.value,
+                      Division name
+                    </label>
+                    <Input
+                      id="divisionDetailName"
+                      value={selectedDivisionDraft}
+                      onChange={(event) =>
+                        state.setDivisionDraft(
+                          selectedDivision.id,
+                          event.target.value,
+                        )
+                      }
+                      className="mt-3"
+                    />
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          state.saveDivision(
+                            selectedDivision.id,
+                            selectedDivisionDraft,
                           )
                         }
-                      />
-                      <div className="flex shrink-0 gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() =>
-                            onUpdateSubdivision(
-                              division.id,
-                              subdivision.id,
-                              draft,
-                            )
-                          }
-                          disabled={
-                            isSavingSubdivision ||
-                            isDeletingSubdivision ||
-                            !draft.trim()
-                          }
-                        >
-                          {isSavingSubdivision ? (
-                            <Loader2
-                              data-icon="inline-start"
-                              className="animate-spin"
-                            />
-                          ) : null}
-                          {isSavingSubdivision ? "Saving..." : "Save"}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() =>
-                            onDeleteSubdivision(division.id, subdivision.id)
-                          }
-                          disabled={isDeletingSubdivision || isSavingSubdivision}
-                          aria-label={`Delete ${subdivision.name}`}
-                        >
-                          {isDeletingSubdivision ? (
-                            <Loader2 className="animate-spin" />
-                          ) : (
-                            <Trash2 />
-                          )}
-                        </Button>
-                      </div>
+                        disabled={
+                          isSavingDivision ||
+                          isDeletingDivision ||
+                          !selectedDivisionDraft.trim()
+                        }
+                      >
+                        {isSavingDivision ? (
+                          <Loader2
+                            data-icon="inline-start"
+                            className="animate-spin"
+                          />
+                        ) : null}
+                        {isSavingDivision ? "Saving..." : "Save division"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => onDeleteDivision(selectedDivision.id)}
+                        disabled={isDeletingDivision || isSavingDivision}
+                      >
+                        {isDeletingDivision ? (
+                          <Loader2
+                            data-icon="inline-start"
+                            className="animate-spin"
+                          />
+                        ) : (
+                          <Trash2 data-icon="inline-start" />
+                        )}
+                        {isDeletingDivision ? "Deleting..." : "Delete"}
+                      </Button>
                     </div>
-                  );
-                })}
+                  </div>
 
-                {(() => {
-                  const newSubdivisionName = state.getNewSubdivisionName(
-                    division.id,
-                  );
-                  const isCreatingSubdivision =
-                    pendingState.creatingSubdivisionDivisionId === division.id;
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <DivisionStat
+                      label="Subdivisions"
+                      value={selectedDivision.subdivisions.length}
+                    />
+                    <DivisionStat
+                      label="Documents"
+                      value={selectedDivision.documentCount ?? 0}
+                    />
+                  </div>
+                </div>
 
-                  return (
-                <form
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    state.createSubdivision(division.id);
-                  }}
-                  className="flex flex-col gap-2 sm:flex-row"
-                >
-                  <Input
-                    value={newSubdivisionName}
-                    onChange={(event) =>
-                      state.setNewSubdivisionName(
-                        division.id,
-                        event.target.value,
-                      )
-                    }
-                    placeholder={`New subdivision for ${division.name}`}
-                  />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    disabled={
-                      isCreatingSubdivision || !newSubdivisionName.trim()
-                    }
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        Subdivisions
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Add only when this division needs one
+                      </p>
+                    </div>
+                    <Badge variant="neutral">
+                      {selectedDivision.subdivisions.length}
+                    </Badge>
+                  </div>
+
+                  {selectedDivision.subdivisions.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedDivision.subdivisions.map((subdivision) => {
+                        const draft = state.getSubdivisionDraft(subdivision);
+                        const isSavingSubdivision =
+                          pendingState.savingSubdivisionId === subdivision.id;
+                        const isDeletingSubdivision =
+                          pendingState.deletingSubdivisionId === subdivision.id;
+
+                        return (
+                          <div
+                            key={subdivision.id}
+                            className="grid gap-2 rounded-2xl border border-border/70 bg-muted/[0.05] p-3 md:grid-cols-[1fr_auto]"
+                          >
+                            <Input
+                              value={draft}
+                              onChange={(event) =>
+                                state.setSubdivisionDraft(
+                                  subdivision.id,
+                                  event.target.value,
+                                )
+                              }
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                  onUpdateSubdivision(
+                                    selectedDivision.id,
+                                    subdivision.id,
+                                    draft,
+                                  )
+                                }
+                                disabled={
+                                  isSavingSubdivision ||
+                                  isDeletingSubdivision ||
+                                  !draft.trim()
+                                }
+                              >
+                                {isSavingSubdivision ? (
+                                  <Loader2
+                                    data-icon="inline-start"
+                                    className="animate-spin"
+                                  />
+                                ) : null}
+                                {isSavingSubdivision ? "Saving..." : "Save"}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() =>
+                                  onDeleteSubdivision(
+                                    selectedDivision.id,
+                                    subdivision.id,
+                                  )
+                                }
+                                disabled={
+                                  isDeletingSubdivision || isSavingSubdivision
+                                }
+                                aria-label={`Delete ${subdivision.name}`}
+                              >
+                                {isDeletingSubdivision ? (
+                                  <Loader2 className="animate-spin" />
+                                ) : (
+                                  <Trash2 />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={<FolderOpen />}
+                      title="No subdivisions yet"
+                      description="New divisions start empty. Add the first subdivision below when it is needed."
+                    />
+                  )}
+
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      state.createSubdivision(selectedDivision.id);
+                    }}
+                    className="grid gap-2 rounded-2xl border border-border/80 bg-background p-3 sm:grid-cols-[1fr_auto]"
                   >
-                    {isCreatingSubdivision ? (
-                      <Loader2
-                        data-icon="inline-start"
-                        className="animate-spin"
-                      />
-                    ) : (
-                      <Plus data-icon="inline-start" />
-                    )}
-                    {isCreatingSubdivision ? "Adding..." : "Add Subdivision"}
-                  </Button>
-                </form>
-                  );
-                })()}
+                    <Input
+                      value={newSubdivisionName}
+                      onChange={(event) =>
+                        state.setNewSubdivisionName(
+                          selectedDivision.id,
+                          event.target.value,
+                        )
+                      }
+                      placeholder={`New subdivision for ${selectedDivision.name}`}
+                    />
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      disabled={
+                        isCreatingSubdivision || !newSubdivisionName.trim()
+                      }
+                    >
+                      {isCreatingSubdivision ? (
+                        <Loader2
+                          data-icon="inline-start"
+                          className="animate-spin"
+                        />
+                      ) : (
+                        <Plus data-icon="inline-start" />
+                      )}
+                      {isCreatingSubdivision ? "Adding..." : "Add Subdivision"}
+                    </Button>
+                  </form>
+                </div>
               </div>
             </div>
-          );
-        })}
-      </div>
+          ) : null}
+        </div>
+      ) : (
+        <EmptyState
+          icon={<Building2 />}
+          title="No divisions yet"
+          description="Create a division first. Subdivisions stay empty until you add them from its detail."
+        />
+      )}
     </SectionCard>
+  );
+}
+
+function DivisionStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-border/70 bg-background p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold text-foreground">{value}</p>
+    </div>
   );
 }
 

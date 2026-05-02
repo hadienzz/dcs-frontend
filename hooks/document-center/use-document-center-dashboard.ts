@@ -405,6 +405,9 @@ export function useDivisionManagementState({
   onUpdateDivision: (divisionId: string, name: string) => void;
   onCreateSubdivision: (divisionId: string, name: string) => void;
 }) {
+  const [selectedDivisionId, setSelectedDivisionId] = useState<string | null>(
+    null,
+  );
   const [newDivisionName, setNewDivisionName] = useState("");
   const [divisionDrafts, setDivisionDrafts] = useState<Record<string, string>>(
     {},
@@ -417,6 +420,8 @@ export function useDivisionManagementState({
   >({});
 
   return {
+    selectedDivisionId,
+    selectDivision: setSelectedDivisionId,
     newDivisionName,
     setNewDivisionName,
     getDivisionDraft: (division: DocumentDivision) =>
