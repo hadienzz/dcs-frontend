@@ -2,6 +2,7 @@ import type {
   ActivityLogEntry,
   DocumentAccount,
   DocumentCenterQuery,
+  DocumentCenterSession,
   DocumentCenterStore,
   DocumentDivision,
   EnrichedActivityLogEntry,
@@ -22,6 +23,14 @@ export type BackendDocumentResponse = {
   message: string;
   data?: {
     document: BackendDocumentRecord;
+  };
+};
+
+export type BackendDocumentCenterAuthResponse = {
+  status: "success" | "error";
+  message: string;
+  data?: {
+    account?: BackendAccount;
   };
 };
 
@@ -82,13 +91,13 @@ export type BackendDocumentRecord = {
   pic_name: string;
 };
 
-type BackendAccount = {
+export type BackendAccount = {
   id: string;
   name: string;
   username: string;
   role: "superadmin" | "shared-user";
   assigned_division_ids: string[];
-  created_at: string;
+  created_at?: string;
 };
 
 type BackendActivityLog = {
@@ -146,14 +155,24 @@ export function mapDocument(
   };
 }
 
-function mapUser(user: BackendAccount): DocumentAccount {
+export function mapDocumentAccount(user: BackendAccount): DocumentAccount {
   return {
     id: user.id,
     name: user.name,
     username: user.username,
     role: user.role,
     assignedDivisionIds: user.assigned_division_ids,
-    createdAt: user.created_at,
+    createdAt: user.created_at ?? "",
+  };
+}
+
+export function mapSessionAccount(user: BackendAccount): DocumentCenterSession {
+  return {
+    id: user.id,
+    name: user.name,
+    username: user.username,
+    role: user.role,
+    assignedDivisionIds: user.assigned_division_ids,
   };
 }
 
@@ -181,7 +200,7 @@ export function mapStore(store: BackendDocumentCenterStore): DocumentCenterStore
   return {
     divisions: store.divisions.map(mapDivision),
     documents: store.documents.map(mapDocument),
-    users: store.users.map(mapUser),
+    users: store.users.map(mapDocumentAccount),
     activityLogs: store.activity_logs.map(mapActivityLog),
     recentDocuments,
     recentDocumentsPagination: {

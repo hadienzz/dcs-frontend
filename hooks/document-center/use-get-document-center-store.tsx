@@ -6,10 +6,14 @@ import getDocumentCenterStore from "@/services/document-center/get-document-cent
 import type { DocumentCenterQuery } from "@/types/document-center";
 import { DOCUMENT_CENTER_QUERY_KEY } from "@/hooks/document-center/query-key";
 
-export function useDocumentCenterData(query: DocumentCenterQuery = {}) {
+export function useDocumentCenterData(
+  query: DocumentCenterQuery = {},
+  enabled = true,
+) {
   return useQuery({
     queryKey: [...DOCUMENT_CENTER_QUERY_KEY, query],
     queryFn: () => getDocumentCenterStore(query),
+    enabled,
     staleTime: 1000 * 60 * 5,
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useCreateDivisionMutation } from "@/hooks/document-center/use-create-division";
@@ -22,6 +22,7 @@ import { EMPTY_DOCUMENT_CENTER_STORE } from "@/types/document-center";
 import type {
   DocumentAccount,
   DocumentCenterQuery,
+  DocumentCenterSession,
   DocumentDivision,
   DocumentFilters,
   DocumentPic,
@@ -78,6 +79,21 @@ export const EMPTY_FILTERS: DocumentFilters = {
   picId: "",
 };
 
+const SUPERADMIN_TABS: DocumentCenterTab[] = [
+  "overview",
+  "center",
+  "upload",
+  "divisions",
+  "pic",
+  "users",
+];
+
+const SHARED_USER_TABS: DocumentCenterTab[] = [
+  "overview",
+  "center",
+  "upload",
+];
+
 type PendingDeleteSubdivision = {
   divisionId: string;
   divisionName: string;
@@ -91,7 +107,11 @@ function getRecentRangeLabel(range: RecentDocumentRange) {
   );
 }
 
-export function useDocumentCenterDashboard() {
+export function useDocumentCenterDashboard({
+  session,
+}: {
+  session?: DocumentCenterSession | null;
+} = {}) {
   const [activeTab, setActiveTab] = useState<DocumentCenterTab>("overview");
   const [documentViewMode, setDocumentViewMode] =
     useState<DocumentViewMode>("cards");
@@ -115,6 +135,21 @@ export function useDocumentCenterDashboard() {
     useState<DocumentPic | null>(null);
   const [pendingDeleteUser, setPendingDeleteUser] =
     useState<DocumentAccount | null>(null);
+
+  const isSuperadmin = session?.role === "superadmin";
+  const availableTabs = isSuperadmin ? SUPERADMIN_TABS : SHARED_USER_TABS;
+
+  useEffect(() => {
+    if (!availableTabs.includes(activeTab)) {
+      setActiveTab("overview");
+    }
+  }, [activeTab, availableTabs]);
+
+  useEffect(() => {
+    if (!isSuperadmin) {
+      setEditingDocument(null);
+    }
+  }, [isSuperadmin]);
 
   const documentCenterQuery: DocumentCenterQuery = useMemo(
     () => ({
@@ -142,7 +177,7 @@ export function useDocumentCenterDashboard() {
     isFetching,
     isLoading,
     refetch,
-  } = useDocumentCenterData(documentCenterQuery);
+  } = useDocumentCenterData(documentCenterQuery, Boolean(session));
   const deleteDocumentMutation = useDeleteDocumentMutation();
   const createDivisionMutation = useCreateDivisionMutation();
   const updateDivisionMutation = useUpdateDivisionMutation();
@@ -174,6 +209,7 @@ export function useDocumentCenterDashboard() {
   const uploadForm = useUploadDocumentForm({
     divisions,
     documentToEdit: editingDocument,
+    accountUsername: session?.username,
     onCompleted: () => {
       if (editingDocument) {
         setEditingDocument(null);
@@ -223,12 +259,17 @@ export function useDocumentCenterDashboard() {
   }
 
   function handleEditDocument(document: EnrichedDocumentRecord) {
+    if (!isSuperadmin) {
+      toast.error("Akun pekerja hanya bisa upload dan melihat dokumen.");
+      return;
+    }
+
     setEditingDocument(document);
     setActiveTab("upload");
   }
 
   function handleConfirmDeleteDocument() {
-    if (!pendingDeleteDocument) {
+    if (!pendingDeleteDocument || !isSuperadmin) {
       return;
     }
 
@@ -326,6 +367,11 @@ export function useDocumentCenterDashboard() {
   return {
     activeTab,
     setActiveTab,
+    session,
+    isSuperadmin,
+    availableTabs,
+    canManageDocuments: isSuperadmin,
+    canManageStructure: isSuperadmin,
     isLoading,
     isRefreshing: isFetching && !isLoading,
     loadErrorMessage: isLoadError
@@ -411,7 +457,11 @@ export function useDocumentCenterDashboard() {
       onView: handleViewDocument,
       onDownload: handleDownloadDocument,
       onEdit: handleEditDocument,
-      onDelete: setPendingDeleteDocument,
+      onDelete: isSuperadmin
+        ? setPendingDeleteDocument
+        : () => {
+            toast.error("Akun pekerja tidak bisa menghapus dokumen.");
+          },
     },
     overviewActions: {
       onRecentRangeChange: handleRecentRangeChange,
