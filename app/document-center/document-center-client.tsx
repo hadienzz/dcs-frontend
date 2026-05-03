@@ -11,6 +11,7 @@ import {
   FolderOpen,
   LayoutDashboard,
   Loader2,
+  LogOut,
   Plus,
   Search,
   ShieldCheck,
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { DeleteDocumentDialog } from "@/components/document-center/delete-document-dialog";
+import { DocumentCenterLoginPanel } from "@/components/document-center/document-center-login-panel";
 import { DeleteEntityDialog } from "@/components/document-center/delete-entity-dialog";
 import { DivisionSelect } from "@/components/document-center/division-select";
 import { DocumentCard } from "@/components/document-center/document-card";
@@ -45,6 +47,11 @@ import {
   type DocumentCenterTab,
   type DocumentViewMode,
 } from "@/hooks/document-center/use-document-center-dashboard";
+import { useDocumentCenterLoginForm } from "@/hooks/document-center/use-document-center-login-form";
+import {
+  useDocumentCenterLogoutMutation,
+  useDocumentCenterSessionQuery,
+} from "@/hooks/document-center/use-document-center-session";
 import type {
   DocumentAccount,
   DocumentDivision,
@@ -64,7 +71,26 @@ import {
 } from "@/utils/document-center";
 
 export function DocumentCenterClient() {
-  const dashboard = useDocumentCenterDashboard();
+  const sessionQuery = useDocumentCenterSessionQuery();
+  const loginForm = useDocumentCenterLoginForm();
+  const logoutMutation = useDocumentCenterLogoutMutation();
+  const dashboard = useDocumentCenterDashboard({
+    session: sessionQuery.data,
+  });
+
+  if (sessionQuery.isLoading) {
+    return <DocumentCenterAuthLoading />;
+  }
+
+  if (!sessionQuery.data) {
+    return (
+      <DocumentCenterLoginPanel
+        formik={loginForm.formik}
+        isSubmitting={loginForm.isSubmitting}
+        onRoleChange={loginForm.setRole}
+      />
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#fbfbfc_0%,#f7f7f8_46%,#fff_100%)]">
@@ -85,13 +111,28 @@ export function DocumentCenterClient() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="outline">Superadmin</Badge>
+            <Badge variant="outline">
+              {dashboard.isSuperadmin ? "Superadmin" : "Pekerja"}
+            </Badge>
             <Button
               type="button"
               onClick={dashboard.uploadActions.onStartUpload}
             >
               <Upload data-icon="inline-start" />
               Upload
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+            >
+              {logoutMutation.isPending ? (
+                <Loader2 data-icon="inline-start" className="animate-spin" />
+              ) : (
+                <LogOut data-icon="inline-start" />
+              )}
+              Keluar
             </Button>
           </div>
         </div>
@@ -105,7 +146,12 @@ export function DocumentCenterClient() {
           }
         >
           <div className="pb-1">
-            <TabsList className="grid w-full grid-cols-2 gap-2 rounded-[24px] border-border/80 bg-background/95 p-2 shadow-[0_18px_36px_-32px_rgba(15,23,42,0.34)] sm:grid-cols-3 lg:grid-cols-6">
+            <TabsList
+              className={cn(
+                "grid w-full grid-cols-2 gap-2 rounded-[24px] border-border/80 bg-background/95 p-2 shadow-[0_18px_36px_-32px_rgba(15,23,42,0.34)] sm:grid-cols-3",
+                dashboard.isSuperadmin ? "lg:grid-cols-6" : "lg:grid-cols-3",
+              )}
+            >
               <DocumentTabTrigger value="overview" icon={<LayoutDashboard />}>
                 Overview
               </DocumentTabTrigger>
@@ -115,15 +161,19 @@ export function DocumentCenterClient() {
               <DocumentTabTrigger value="upload" icon={<Upload />}>
                 Upload
               </DocumentTabTrigger>
-              <DocumentTabTrigger value="divisions" icon={<Building2 />}>
-                Divisions
-              </DocumentTabTrigger>
-              <DocumentTabTrigger value="pic" icon={<UserRound />}>
-                PIC
-              </DocumentTabTrigger>
-              <DocumentTabTrigger value="users" icon={<Users />}>
-                Users
-              </DocumentTabTrigger>
+              {dashboard.isSuperadmin ? (
+                <>
+                  <DocumentTabTrigger value="divisions" icon={<Building2 />}>
+                    Divisions
+                  </DocumentTabTrigger>
+                  <DocumentTabTrigger value="pic" icon={<UserRound />}>
+                    PIC
+                  </DocumentTabTrigger>
+                  <DocumentTabTrigger value="users" icon={<Users />}>
+                    Users
+                  </DocumentTabTrigger>
+                </>
+              ) : null}
             </TabsList>
           </div>
 
@@ -149,6 +199,7 @@ export function DocumentCenterClient() {
                 lastItem={dashboard.recentLastItem}
                 {...dashboard.overviewActions}
                 documentActions={dashboard.documentActions}
+                canManageDocuments={dashboard.canManageDocuments}
               />
             )}
           </TabsContent>
@@ -171,6 +222,7 @@ export function DocumentCenterClient() {
                 onViewModeChange={dashboard.setDocumentViewMode}
                 {...dashboard.documentCenterActions}
                 documentActions={dashboard.documentActions}
+                canManageDocuments={dashboard.canManageDocuments}
               />
             )}
           </TabsContent>
@@ -200,42 +252,46 @@ export function DocumentCenterClient() {
             )}
           </TabsContent>
 
-          <TabsContent value="divisions">
-            {dashboard.isLoading ? (
-              <DocumentCenterLoadingPanel variant="management" />
-            ) : (
-              <DivisionManagementPanel
-                divisions={dashboard.divisions}
-                pendingState={dashboard.divisionPendingState}
-                {...dashboard.divisionActions}
-              />
-            )}
-          </TabsContent>
+          {dashboard.isSuperadmin ? (
+            <>
+              <TabsContent value="divisions">
+                {dashboard.isLoading ? (
+                  <DocumentCenterLoadingPanel variant="management" />
+                ) : (
+                  <DivisionManagementPanel
+                    divisions={dashboard.divisions}
+                    pendingState={dashboard.divisionPendingState}
+                    {...dashboard.divisionActions}
+                  />
+                )}
+              </TabsContent>
 
-          <TabsContent value="pic">
-            {dashboard.isLoading ? (
-              <DocumentCenterLoadingPanel variant="management" />
-            ) : (
-              <PICManagementPanel
-                divisions={dashboard.divisions}
-                pendingState={dashboard.picPendingState}
-                {...dashboard.picActions}
-              />
-            )}
-          </TabsContent>
+              <TabsContent value="pic">
+                {dashboard.isLoading ? (
+                  <DocumentCenterLoadingPanel variant="management" />
+                ) : (
+                  <PICManagementPanel
+                    divisions={dashboard.divisions}
+                    pendingState={dashboard.picPendingState}
+                    {...dashboard.picActions}
+                  />
+                )}
+              </TabsContent>
 
-          <TabsContent value="users">
-            {dashboard.isLoading ? (
-              <DocumentCenterLoadingPanel variant="management" />
-            ) : (
-              <UserManagementPanel
-                divisions={dashboard.divisions}
-                users={dashboard.store.users}
-                pendingState={dashboard.userPendingState}
-                {...dashboard.userActions}
-              />
-            )}
-          </TabsContent>
+              <TabsContent value="users">
+                {dashboard.isLoading ? (
+                  <DocumentCenterLoadingPanel variant="management" />
+                ) : (
+                  <UserManagementPanel
+                    divisions={dashboard.divisions}
+                    users={dashboard.store.users}
+                    pendingState={dashboard.userPendingState}
+                    {...dashboard.userActions}
+                  />
+                )}
+              </TabsContent>
+            </>
+          ) : null}
             </>
           )}
         </Tabs>
@@ -290,6 +346,17 @@ export function DocumentCenterClient() {
         onOpenChange={dashboard.userDeleteDialogActions.onOpenChange}
         onConfirm={dashboard.userDeleteDialogActions.onConfirm}
       />
+    </main>
+  );
+}
+
+function DocumentCenterAuthLoading() {
+  return (
+    <main className="grid min-h-screen place-items-center bg-[linear-gradient(180deg,#fbfbfc_0%,#f7f7f8_46%,#fff_100%)] px-4">
+      <div className="flex items-center gap-3 rounded-2xl border border-border/80 bg-background px-5 py-4 text-sm font-semibold text-muted-foreground shadow-sm">
+        <Loader2 className="size-4 animate-spin text-primary" />
+        Memeriksa sesi Document Center...
+      </div>
     </main>
   );
 }

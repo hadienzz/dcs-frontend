@@ -1,5 +1,25 @@
 export type DocumentUserRole = "superadmin" | "shared-user";
 
+export type DocumentCenterLoginRole = DocumentUserRole;
+
+export interface DocumentCenterSession {
+  id: string;
+  name: string;
+  username: string;
+  role: DocumentUserRole;
+  assignedDivisionIds: string[];
+}
+
+export interface DocumentCenterLoginFormValues {
+  role: DocumentCenterLoginRole;
+  password: string;
+}
+
+export interface DocumentCenterLoginPayload {
+  role: DocumentCenterLoginRole;
+  password?: string;
+}
+
 export interface DocumentSubdivision {
   id: string;
   name: string;

@@ -23,6 +23,7 @@ import {
 interface UseUploadDocumentFormOptions {
   divisions: DocumentDivision[];
   documentToEdit?: EnrichedDocumentRecord | null;
+  accountUsername?: string;
   onCompleted?: () => void;
 }
 
@@ -46,6 +47,7 @@ function getInitialValues(
 export function useUploadDocumentForm({
   divisions,
   documentToEdit,
+  accountUsername = "",
   onCompleted,
 }: UseUploadDocumentFormOptions) {
   const uploadDocumentMutation = useUploadDocumentMutation({
@@ -80,7 +82,7 @@ export function useUploadDocumentForm({
             subdivisionId: values.subdivisionId,
             picId: values.picId,
             notes: values.notes,
-            updatedByAccount: "superadmin@dcs.local",
+            updatedByAccount: accountUsername,
           },
           {
             onSuccess: () => {
@@ -113,7 +115,7 @@ export function useUploadDocumentForm({
           subdivisionId: values.subdivisionId,
           picId: values.picId,
           notes: values.notes,
-          uploadedByAccount: "superadmin@dcs.local",
+          uploadedByAccount: accountUsername,
         },
         {
           onSuccess: () => {

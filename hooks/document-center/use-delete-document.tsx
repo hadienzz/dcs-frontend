@@ -23,20 +23,14 @@ export function useDeleteDocumentMutation(
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: DOCUMENT_CENTER_QUERY_KEY });
       notifyMutationSuccess(
-        getMutationMessage(
-          options.successMessage,
-          "Dokumen berhasil dihapus.",
-        ),
+        getMutationMessage(options.successMessage, "Dokumen berhasil dihapus."),
       );
       options.onSuccess?.(data, variables);
     },
     onError: (error, variables) => {
       notifyMutationError(
         error,
-        getMutationMessage(
-          options.errorMessage,
-          "Dokumen belum bisa dihapus.",
-        ),
+        getMutationMessage(options.errorMessage, "Dokumen belum bisa dihapus."),
       );
       options.onError?.(error, variables);
     },
