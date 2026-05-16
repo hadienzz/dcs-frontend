@@ -10,7 +10,7 @@ import {
 
 import { DocumentTabTrigger } from "@/components/document-center/document-tab-trigger";
 import { Tabs, TabsList } from "@/components/ui/tabs";
-import type { DocumentCenterTab } from "@/hooks/document-center/use-document-center-dashboard";
+import type { DocumentCenterTab } from "@/hooks/document-center/document-center-options";
 import { cn } from "@/lib/utils";
 
 interface DocumentCenterTabsProps {

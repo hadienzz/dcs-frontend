@@ -13,7 +13,7 @@ const loginDocumentCenter = async (
   payload: DocumentCenterLoginPayload,
 ): Promise<DocumentCenterSession> => {
   const { data } = await axiosInstance.post<BackendDocumentCenterAuthResponse>(
-    "/api/document-center/auth/login",
+    "/api/auth/login",
     payload,
   );
 

@@ -19,26 +19,87 @@ import { UserManagementPanel } from "@/components/document-center/user-managemen
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TabsContent } from "@/components/ui/tabs";
-import { useDocumentCenterDashboard } from "@/hooks/document-center/use-document-center-dashboard";
+import { useDivisionManagementActions } from "@/hooks/document-center/use-division-management-actions";
+import { useDocumentActions } from "@/hooks/document-center/use-document-actions";
+import { useDocumentCenterDrive } from "@/hooks/document-center/use-document-center-drive";
+import { useDocumentCenterDriveContext } from "@/hooks/document-center/use-document-center-drive-context";
+import { useDocumentCenterFilterOptions } from "@/hooks/document-center/use-document-center-filter-options";
+import { useDocumentCenterFilters } from "@/hooks/document-center/use-document-center-filters";
 import { useDocumentCenterLoginForm } from "@/hooks/document-center/use-document-center-login-form";
 import {
   useDocumentCenterLogoutMutation,
   useDocumentCenterSessionQuery,
 } from "@/hooks/document-center/use-document-center-session";
+import { useDocumentCenterStoreQuery } from "@/hooks/document-center/use-document-center-store-query";
+import { useDocumentCenterTabs } from "@/hooks/document-center/use-document-center-tabs";
+import { useDocumentDeleteDialog } from "@/hooks/document-center/use-document-delete-dialog";
+import { useDocumentViewMode } from "@/hooks/document-center/use-document-view-mode";
+import { usePicManagementActions } from "@/hooks/document-center/use-pic-management-actions";
+import { useRecentDocumentsControls } from "@/hooks/document-center/use-recent-documents-controls";
+import { useRecentDocumentsPagination } from "@/hooks/document-center/use-recent-documents-pagination";
+import { useUploadDocumentForm } from "@/hooks/document-center/use-upload-document-form";
+import { useUserManagementActions } from "@/hooks/document-center/use-user-management-actions";
 
 export function DocumentCenterClient() {
   const sessionQuery = useDocumentCenterSessionQuery();
   const loginForm = useDocumentCenterLoginForm();
   const logoutMutation = useDocumentCenterLogoutMutation();
-  const dashboard = useDocumentCenterDashboard({
-    session: sessionQuery.data,
+  const session = sessionQuery.data;
+
+  const tabs = useDocumentCenterTabs(session);
+  const filters = useDocumentCenterFilters();
+  const drive = useDocumentCenterDrive();
+  const recent = useRecentDocumentsControls();
+  const viewMode = useDocumentViewMode();
+
+  const documentCenter = useDocumentCenterStoreQuery({
+    session,
+    filters: filters.filters,
+    driveDivisionId: drive.driveDivisionId,
+    driveSubdivisionId: drive.driveSubdivisionId,
+    recentRange: recent.recentRange,
+    recentSort: recent.recentSort,
+    recentPage: recent.recentPage,
+    recentPageSize: recent.recentPageSize,
   });
+
+  const filterOptions = useDocumentCenterFilterOptions({
+    divisions: documentCenter.divisions,
+    divisionId: filters.filters.divisionId,
+  });
+  const driveContext = useDocumentCenterDriveContext({
+    divisions: documentCenter.divisions,
+    driveDivisionId: drive.driveDivisionId,
+    driveSubdivisionId: drive.driveSubdivisionId,
+  });
+  const recentPagination = useRecentDocumentsPagination({
+    pagination: documentCenter.store.recentDocumentsPagination,
+    itemCount: documentCenter.store.recentDocuments.length,
+  });
+
+  const documentDelete = useDocumentDeleteDialog();
+  const documentControls = useDocumentActions({
+    isSuperadmin: tabs.isSuperadmin,
+    onOpenUploadTab: () => tabs.setActiveTab("upload"),
+    onOpenCenterTab: () => tabs.setActiveTab("center"),
+    onRequestDelete: documentDelete.requestDeleteDocument,
+  });
+  const uploadForm = useUploadDocumentForm({
+    divisions: documentCenter.divisions,
+    documentToEdit: documentControls.editingDocument,
+    accountUsername: session?.username,
+    onCompleted: documentControls.onUploadCompleted,
+  });
+
+  const divisionManagement = useDivisionManagementActions();
+  const picManagement = usePicManagementActions();
+  const userManagement = useUserManagementActions();
 
   if (sessionQuery.isLoading) {
     return <DocumentCenterAuthLoading />;
   }
 
-  if (!sessionQuery.data) {
+  if (!session) {
     return (
       <DocumentCenterLoginPanel
         formik={loginForm.formik}
@@ -68,11 +129,11 @@ export function DocumentCenterClient() {
 
           <div className="flex items-center gap-2">
             <Badge variant="outline">
-              {dashboard.isSuperadmin ? "Superadmin" : "Pekerja"}
+              {tabs.isSuperadmin ? "Superadmin" : "Pekerja"}
             </Badge>
             <Button
               type="button"
-              onClick={dashboard.uploadActions.onStartUpload}
+              onClick={documentControls.uploadActions.onStartUpload}
             >
               <Upload data-icon="inline-start" />
               Upload
@@ -96,120 +157,123 @@ export function DocumentCenterClient() {
 
       <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <DocumentCenterTabs
-          activeTab={dashboard.activeTab}
-          isSuperadmin={dashboard.isSuperadmin}
-          onTabChange={dashboard.setActiveTab}
+          activeTab={tabs.activeTab}
+          isSuperadmin={tabs.isSuperadmin}
+          onTabChange={tabs.setActiveTab}
         >
-          {dashboard.loadErrorMessage ? (
+          {documentCenter.loadErrorMessage ? (
             <DocumentCenterErrorPanel
-              message={dashboard.loadErrorMessage}
-              isRetrying={dashboard.isRefreshing}
-              onRetry={dashboard.onRetryLoad}
+              message={documentCenter.loadErrorMessage}
+              isRetrying={documentCenter.isRefreshing}
+              onRetry={documentCenter.onRetryLoad}
             />
           ) : (
             <>
               <TabsContent value="overview">
-                {dashboard.isLoading ? (
+                {documentCenter.isLoading ? (
                   <DocumentCenterLoadingPanel variant="overview" />
                 ) : (
                   <OverviewPanel
-                    recentDocuments={dashboard.store.recentDocuments}
-                    recentPagination={dashboard.store.recentDocumentsPagination}
-                    recentRange={dashboard.recentRange}
-                    recentSort={dashboard.recentSort}
-                    recentRangeLabel={dashboard.recentRangeLabel}
-                    firstItem={dashboard.recentFirstItem}
-                    lastItem={dashboard.recentLastItem}
-                    {...dashboard.overviewActions}
-                    documentActions={dashboard.documentActions}
+                    recentDocuments={documentCenter.store.recentDocuments}
+                    recentPagination={
+                      documentCenter.store.recentDocumentsPagination
+                    }
+                    recentRange={recent.recentRange}
+                    recentSort={recent.recentSort}
+                    recentRangeLabel={recent.recentRangeLabel}
+                    firstItem={recentPagination.recentFirstItem}
+                    lastItem={recentPagination.recentLastItem}
+                    {...recent.overviewActions}
+                    documentActions={documentControls.documentActions}
                   />
                 )}
               </TabsContent>
 
               <TabsContent value="center">
-                {dashboard.isLoading ? (
+                {documentCenter.isLoading ? (
                   <DocumentCenterLoadingPanel variant="center" />
                 ) : (
                   <DocumentCenterPanel
-                    divisions={dashboard.divisions}
-                    documents={dashboard.store.documents}
-                    filters={dashboard.filters}
-                    subdivisionOptions={dashboard.filterSubdivisionOptions}
-                    picOptions={dashboard.filterPicOptions}
-                    driveDivisionId={dashboard.driveDivisionId}
-                    driveSubdivisionId={dashboard.driveSubdivisionId}
-                    activeDriveDivision={dashboard.activeDriveDivision}
-                    activeDriveSubdivision={dashboard.activeDriveSubdivision}
-                    viewMode={dashboard.documentViewMode}
-                    onViewModeChange={dashboard.setDocumentViewMode}
-                    {...dashboard.documentCenterActions}
-                    documentActions={dashboard.documentActions}
+                    divisions={documentCenter.divisions}
+                    documents={documentCenter.store.documents}
+                    filters={filters.filters}
+                    subdivisionOptions={filterOptions.filterSubdivisionOptions}
+                    picOptions={filterOptions.filterPicOptions}
+                    driveDivisionId={drive.driveDivisionId}
+                    driveSubdivisionId={drive.driveSubdivisionId}
+                    activeDriveDivision={driveContext.activeDriveDivision}
+                    activeDriveSubdivision={driveContext.activeDriveSubdivision}
+                    viewMode={viewMode.documentViewMode}
+                    onViewModeChange={viewMode.setDocumentViewMode}
+                    {...filters.filterActions}
+                    {...drive.driveActions}
+                    documentActions={documentControls.documentActions}
                   />
                 )}
               </TabsContent>
 
               <TabsContent value="upload">
-                {dashboard.isLoading ? (
+                {documentCenter.isLoading ? (
                   <DocumentCenterLoadingPanel variant="form" />
                 ) : (
                   <SectionCard
                     eyebrow="Document upload"
                     title={
-                      dashboard.editingDocument
+                      documentControls.editingDocument
                         ? "Edit Metadata"
                         : "Upload Document"
                     }
                     description="Upload documents into a Division -> Subdivision -> Document structure."
                   >
                     <UploadDocumentForm
-                      formik={dashboard.uploadForm.formik}
-                      divisions={dashboard.divisions}
-                      subdivisionOptions={dashboard.uploadForm.subdivisionOptions}
-                      picOptions={dashboard.uploadForm.picOptions}
-                      isSubmitting={dashboard.uploadForm.isSubmitting}
-                      isEditMode={dashboard.uploadForm.isEditMode}
-                      onDivisionChange={dashboard.uploadForm.handleDivisionChange}
-                      onCancelEdit={dashboard.uploadActions.onCancelEdit}
+                      formik={uploadForm.formik}
+                      divisions={documentCenter.divisions}
+                      subdivisionOptions={uploadForm.subdivisionOptions}
+                      picOptions={uploadForm.picOptions}
+                      isSubmitting={uploadForm.isSubmitting}
+                      isEditMode={uploadForm.isEditMode}
+                      onDivisionChange={uploadForm.handleDivisionChange}
+                      onCancelEdit={documentControls.uploadActions.onCancelEdit}
                     />
                   </SectionCard>
                 )}
               </TabsContent>
 
-              {dashboard.isSuperadmin ? (
+              {tabs.isSuperadmin ? (
                 <>
                   <TabsContent value="divisions">
-                    {dashboard.isLoading ? (
+                    {documentCenter.isLoading ? (
                       <DocumentCenterLoadingPanel variant="management" />
                     ) : (
                       <DivisionManagementPanel
-                        divisions={dashboard.divisions}
-                        pendingState={dashboard.divisionPendingState}
-                        {...dashboard.divisionActions}
+                        divisions={documentCenter.divisions}
+                        pendingState={divisionManagement.divisionPendingState}
+                        {...divisionManagement.divisionActions}
                       />
                     )}
                   </TabsContent>
 
                   <TabsContent value="pic">
-                    {dashboard.isLoading ? (
+                    {documentCenter.isLoading ? (
                       <DocumentCenterLoadingPanel variant="management" />
                     ) : (
                       <PICManagementPanel
-                        divisions={dashboard.divisions}
-                        pendingState={dashboard.picPendingState}
-                        {...dashboard.picActions}
+                        divisions={documentCenter.divisions}
+                        pendingState={picManagement.picPendingState}
+                        {...picManagement.picActions}
                       />
                     )}
                   </TabsContent>
 
                   <TabsContent value="users">
-                    {dashboard.isLoading ? (
+                    {documentCenter.isLoading ? (
                       <DocumentCenterLoadingPanel variant="management" />
                     ) : (
                       <UserManagementPanel
-                        divisions={dashboard.divisions}
-                        users={dashboard.store.users}
-                        pendingState={dashboard.userPendingState}
-                        {...dashboard.userActions}
+                        divisions={documentCenter.divisions}
+                        users={documentCenter.store.users}
+                        pendingState={userManagement.userPendingState}
+                        {...userManagement.userActions}
                       />
                     )}
                   </TabsContent>
@@ -221,53 +285,59 @@ export function DocumentCenterClient() {
       </div>
 
       <DeleteDocumentDialog
-        document={dashboard.pendingDeleteDocument}
-        open={dashboard.isDeleteDialogOpen}
-        isDeleting={dashboard.isDeletingDocument}
-        onOpenChange={dashboard.deleteDialogActions.onOpenChange}
-        onConfirm={dashboard.deleteDialogActions.onConfirm}
+        document={documentDelete.pendingDeleteDocument}
+        open={documentDelete.isDeleteDialogOpen}
+        isDeleting={documentDelete.isDeletingDocument}
+        onOpenChange={documentDelete.deleteDialogActions.onOpenChange}
+        onConfirm={documentDelete.deleteDialogActions.onConfirm}
       />
       <DeleteEntityDialog
-        open={dashboard.isDivisionDeleteDialogOpen}
+        open={divisionManagement.isDivisionDeleteDialogOpen}
         entityLabel="divisi"
-        entityName={dashboard.pendingDeleteDivision?.name}
-        isDeleting={dashboard.isDeletingDivision}
-        onOpenChange={dashboard.divisionDeleteDialogActions.onOpenChange}
-        onConfirm={dashboard.divisionDeleteDialogActions.onConfirm}
+        entityName={divisionManagement.pendingDeleteDivision?.name}
+        isDeleting={divisionManagement.isDeletingDivision}
+        onOpenChange={
+          divisionManagement.divisionDeleteDialogActions.onOpenChange
+        }
+        onConfirm={divisionManagement.divisionDeleteDialogActions.onConfirm}
       />
       <DeleteEntityDialog
-        open={dashboard.isSubdivisionDeleteDialogOpen}
+        open={divisionManagement.isSubdivisionDeleteDialogOpen}
         entityLabel="subdivisi"
-        entityName={dashboard.pendingDeleteSubdivision?.subdivision.name}
+        entityName={
+          divisionManagement.pendingDeleteSubdivision?.subdivision.name
+        }
         context={
-          dashboard.pendingDeleteSubdivision
-            ? `inside ${dashboard.pendingDeleteSubdivision.divisionName}`
+          divisionManagement.pendingDeleteSubdivision
+            ? `inside ${divisionManagement.pendingDeleteSubdivision.divisionName}`
             : undefined
         }
-        isDeleting={dashboard.isDeletingSubdivision}
-        onOpenChange={dashboard.subdivisionDeleteDialogActions.onOpenChange}
-        onConfirm={dashboard.subdivisionDeleteDialogActions.onConfirm}
+        isDeleting={divisionManagement.isDeletingSubdivision}
+        onOpenChange={
+          divisionManagement.subdivisionDeleteDialogActions.onOpenChange
+        }
+        onConfirm={divisionManagement.subdivisionDeleteDialogActions.onConfirm}
       />
       <DeleteEntityDialog
-        open={dashboard.isPicDeleteDialogOpen}
+        open={picManagement.isPicDeleteDialogOpen}
         entityLabel="PIC"
-        entityName={dashboard.pendingDeletePic?.name}
-        isDeleting={dashboard.isDeletingPic}
-        onOpenChange={dashboard.picDeleteDialogActions.onOpenChange}
-        onConfirm={dashboard.picDeleteDialogActions.onConfirm}
+        entityName={picManagement.pendingDeletePic?.name}
+        isDeleting={picManagement.isDeletingPic}
+        onOpenChange={picManagement.picDeleteDialogActions.onOpenChange}
+        onConfirm={picManagement.picDeleteDialogActions.onConfirm}
       />
       <DeleteEntityDialog
-        open={dashboard.isUserDeleteDialogOpen}
+        open={userManagement.isUserDeleteDialogOpen}
         entityLabel="user"
-        entityName={dashboard.pendingDeleteUser?.name}
+        entityName={userManagement.pendingDeleteUser?.name}
         context={
-          dashboard.pendingDeleteUser
-            ? `with username ${dashboard.pendingDeleteUser.username}`
+          userManagement.pendingDeleteUser
+            ? `with username ${userManagement.pendingDeleteUser.username}`
             : undefined
         }
-        isDeleting={dashboard.isDeletingUser}
-        onOpenChange={dashboard.userDeleteDialogActions.onOpenChange}
-        onConfirm={dashboard.userDeleteDialogActions.onConfirm}
+        isDeleting={userManagement.isDeletingUser}
+        onOpenChange={userManagement.userDeleteDialogActions.onOpenChange}
+        onConfirm={userManagement.userDeleteDialogActions.onConfirm}
       />
     </main>
   );

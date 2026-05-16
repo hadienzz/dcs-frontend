@@ -10,7 +10,7 @@ import { SectionCard } from "@/components/document-center/section-card";
 import { SubdivisionSelect } from "@/components/document-center/subdivision-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { DocumentViewMode } from "@/hooks/document-center/use-document-center-dashboard";
+import type { DocumentViewMode } from "@/hooks/document-center/document-center-options";
 import type {
   DocumentDivision,
   DocumentFilters,

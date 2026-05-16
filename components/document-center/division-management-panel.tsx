@@ -13,9 +13,7 @@ import { SectionCard } from "@/components/document-center/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  useDivisionManagementState,
-} from "@/hooks/document-center/use-document-center-dashboard";
+import { useDivisionManagementState } from "@/hooks/document-center/use-division-management-state";
 import type { DocumentDivision, DocumentSubdivision } from "@/types/document-center";
 import { cn } from "@/lib/utils";
 

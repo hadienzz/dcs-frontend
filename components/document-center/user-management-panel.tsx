@@ -5,7 +5,7 @@ import { RoleSelect } from "@/components/document-center/role-select";
 import { SectionCard } from "@/components/document-center/section-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useUserManagementState } from "@/hooks/document-center/use-document-center-dashboard";
+import { useUserManagementState } from "@/hooks/document-center/use-user-management-state";
 import type {
   DocumentAccount,
   DocumentDivision,
