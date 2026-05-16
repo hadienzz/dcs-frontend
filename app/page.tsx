@@ -10,12 +10,14 @@ import { ProductSection } from "../components/home/section/product-section";
 import IndonesiaMap from "../components/home/custom/map-proyek-indonesia";
 import ClientOnlyWidgets from "../components/home/custom/client-only-widgets";
 import { ScrollSection } from "@/components/ui/scroll-section";
+import { SdgsGoalsExplorer } from "@/components/sdgs-public/sdgs-goals-explorer";
 
 export default function HomePage() {
   return (
     <main className="min-h-screen">
       <Navbar />
       <HeroSection />
+      <SdgsGoalsExplorer />
       <ScrollSection>
         <IndonesiaMap />
       </ScrollSection>

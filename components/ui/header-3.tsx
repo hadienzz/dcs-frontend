@@ -21,6 +21,7 @@ import {
   Rocket,
   Shield,
   Sparkles,
+  Target,
   Users,
   ArrowRight,
   ChevronRight,
@@ -125,6 +126,12 @@ export function Header() {
         description: "Portal kolaborasi riset, inovasi, dan ide mahasiswa.",
         icon: Rocket,
       },
+      {
+        title: "Explore SDGs",
+        href: homeHref("sdgs-explorer"),
+        description: "Jelajahi 17 goal, indikator, data, dan berita SDGs.",
+        icon: Target,
+      },
     ],
     [homeHref],
   );
@@ -184,6 +191,11 @@ export function Header() {
         title: "SDGs Hub",
         href: "/sdgs-hub",
         icon: Rocket,
+      },
+      {
+        title: "Explore SDGs",
+        href: homeHref("sdgs-explorer"),
+        icon: Target,
       },
     ],
     [homeHref],
@@ -290,7 +302,10 @@ export function Header() {
     (href: string) => {
       if (href.startsWith("/#")) return false;
       if (href.startsWith("#")) return pathname === "/";
-      return href === pathname || (href !== "/" && pathname.startsWith(href));
+      return (
+        href === pathname ||
+        (href !== "/" && pathname.startsWith(`${href}/`))
+      );
     },
     [pathname],
   );
@@ -358,6 +373,17 @@ export function Header() {
                     )}
                   >
                     SDGs Hub
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href={homeHref("sdgs-explorer")}
+                    className="inline-flex h-9 items-center rounded-lg px-4 py-2 text-[14px] font-medium text-foreground/60 transition-colors hover:text-foreground"
+                  >
+                    SDGs
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
