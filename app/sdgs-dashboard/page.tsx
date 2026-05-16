@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
-import { SdgsDashboardPage } from "@/components/sdgs-dashboard/sdgs-dashboard-page";
+import { OverviewView } from "@/components/sdgs-dashboard/overview-view";
 
 export const metadata: Metadata = {
   title: "SDGs Dashboard",
   description:
-    "Dashboard pengelolaan konten publik dan internal untuk website pemeringkatan SDGs Telkom University.",
+    "Pantau dan kelola inisiatif keberlanjutan Telkom University untuk pemeringkatan SDGs.",
 };
 
 export default function Page() {
-  return <SdgsDashboardPage />;
+  return <OverviewView />;
 }
