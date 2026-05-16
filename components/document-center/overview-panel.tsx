@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   RECENT_RANGE_OPTIONS,
   RECENT_SORT_OPTIONS,
-} from "@/hooks/document-center/use-document-center-dashboard";
+} from "@/hooks/document-center/document-center-options";
 import type {
   EnrichedDocumentRecord,
   RecentDocumentRange,

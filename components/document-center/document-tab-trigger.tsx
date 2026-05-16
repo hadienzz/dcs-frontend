@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { TabsTrigger } from "@/components/ui/tabs";
-import type { DocumentCenterTab } from "@/hooks/document-center/use-document-center-dashboard";
+import type { DocumentCenterTab } from "@/hooks/document-center/document-center-options";
 
 interface DocumentTabTriggerProps {
   value: DocumentCenterTab;

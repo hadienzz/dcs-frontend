@@ -5,7 +5,7 @@ import { SectionCard } from "@/components/document-center/section-card";
 import { DivisionSelect } from "@/components/document-center/division-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { usePicManagementState } from "@/hooks/document-center/use-document-center-dashboard";
+import { usePicManagementState } from "@/hooks/document-center/use-pic-management-state";
 import type { DocumentDivision, DocumentPic } from "@/types/document-center";
 
 interface PicManagementPanelProps {

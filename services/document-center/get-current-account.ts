@@ -10,7 +10,7 @@ const getCurrentDocumentCenterAccount =
   async (): Promise<DocumentCenterSession> => {
     const { data } =
       await axiosInstance.get<BackendDocumentCenterAuthResponse>(
-        "/api/document-center/auth/me",
+        "/api/auth/me",
       );
 
     return mapSessionAccount(
