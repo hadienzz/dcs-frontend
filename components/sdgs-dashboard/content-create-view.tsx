@@ -18,12 +18,10 @@ export function ContentCreateView() {
         title="Tambah Inisiatif SDGs"
         description="Lengkapi form berikut untuk mendokumentasikan inisiatif keberlanjutan baru."
       />
-      <div className="max-w-4xl">
-        <SdgsContentForm
-          onSuccess={() => router.push("/sdgs-dashboard/content")}
-          onCancel={() => router.push("/sdgs-dashboard/content")}
-        />
-      </div>
+      <SdgsContentForm
+        onSuccess={() => router.push("/sdgs-dashboard/content")}
+        onCancel={() => router.push("/sdgs-dashboard/content")}
+      />
     </>
   );
 }

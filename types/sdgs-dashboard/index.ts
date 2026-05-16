@@ -1,9 +1,21 @@
+export interface SdgIndicator {
+  id: string;
+  label: string;
+}
+
 export interface Sdg {
   id: string;
   number: number;
   name: string;
   /** SDG official accent color (hex). */
   color: string;
+  indicators?: SdgIndicator[];
+}
+
+/** What gets stored: the SDG id + which indicators were selected. */
+export interface SdgSelection {
+  sdgId: string;
+  indicators: string[];
 }
 
 export interface Unit {
@@ -60,7 +72,7 @@ export interface SdgsContentFormValues {
   description: string;
   thumbnailName: string;
   attachmentName: string;
-  sdgs: string[];
+  sdgs: SdgSelection[];
   isAvailable: YesNo;
   publicVisibility: YesNo;
   evidenceDescription: string;

@@ -8,10 +8,6 @@ interface ToggleRowProps {
   id: string;
 }
 
-/**
- * Lightweight on/off toggle that renders as a styled checkbox so we don't
- * need to add another Radix dep just for two switches.
- */
 export function ToggleRow({
   label,
   description,
@@ -20,13 +16,16 @@ export function ToggleRow({
   id,
 }: ToggleRowProps) {
   return (
-    <div className="flex items-center justify-between rounded-md border border-border/70 p-4">
+    <div className="flex items-center justify-between rounded-xl border border-black/[0.06] bg-[#fafafa] p-4">
       <div className="pr-4">
-        <label htmlFor={id} className="text-sm font-medium cursor-pointer">
+        <label
+          htmlFor={id}
+          className="cursor-pointer text-sm font-medium text-slate-800"
+        >
           {label}
         </label>
         {description ? (
-          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+          <p className="mt-0.5 text-xs text-slate-400">{description}</p>
         ) : null}
       </div>
       <button
@@ -36,14 +35,14 @@ export function ToggleRow({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          checked ? "bg-primary" : "bg-muted-foreground/30",
+          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b6252a]/20 focus-visible:ring-offset-2",
+          checked ? "bg-[#b6252a]" : "bg-slate-200",
         )}
       >
         <span
           className={cn(
-            "inline-block h-5 w-5 transform rounded-full bg-background shadow transition-transform",
-            checked ? "translate-x-5" : "translate-x-1",
+            "inline-block size-5 transform rounded-full bg-white shadow-sm transition-transform",
+            checked ? "translate-x-5" : "translate-x-0.5",
           )}
         />
       </button>

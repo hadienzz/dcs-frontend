@@ -18,15 +18,17 @@ export function LabeledField({
   children,
 }: LabeledFieldProps) {
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-1.5", className)}>
       <label
         htmlFor={htmlFor}
-        className="text-sm font-medium text-foreground"
+        className="text-[13px] font-medium text-slate-700"
       >
         {label}
       </label>
       {children}
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {hint ? (
+        <p className="text-xs text-slate-400">{hint}</p>
+      ) : null}
     </div>
   );
 }

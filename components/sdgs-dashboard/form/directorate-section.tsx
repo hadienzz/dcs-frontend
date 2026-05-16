@@ -56,16 +56,26 @@ export function DirectorateSection() {
               variant="outline"
               size="sm"
               onClick={() => push({ directorateId: "", units: [] })}
+              className="text-xs"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="size-3.5" />
               Tambah direktorat
             </Button>
           }
         >
           {values.directorates.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Belum ada direktorat dipilih.
-            </p>
+            <div className="rounded-xl border border-dashed border-black/[0.08] bg-[#fafafa] px-4 py-8 text-center">
+              <p className="text-sm text-slate-400">
+                Belum ada direktorat dipilih.
+              </p>
+              <button
+                type="button"
+                onClick={() => push({ directorateId: "", units: [] })}
+                className="mt-2 text-sm font-medium text-[#b6252a] hover:underline"
+              >
+                + Tambah direktorat pertama
+              </button>
+            </div>
           ) : null}
 
           {values.directorates.map((row, index) => {
@@ -79,7 +89,7 @@ export function DirectorateSection() {
             return (
               <div
                 key={index}
-                className="rounded-lg border border-border/70 p-4 space-y-4 bg-muted/15"
+                className="space-y-4 rounded-xl border border-black/[0.06] bg-[#fafafa] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <LabeledField label="Direktorat" className="flex-1">
@@ -98,7 +108,7 @@ export function DirectorateSection() {
                         );
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="border-black/[0.08] bg-white">
                         <SelectValue placeholder="Pilih direktorat…" />
                       </SelectTrigger>
                       <SelectContent>
@@ -117,16 +127,14 @@ export function DirectorateSection() {
                       }
                     />
                   </LabeledField>
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="mt-7 text-destructive hover:text-destructive"
                     onClick={() => remove(index)}
                     aria-label="Hapus direktorat"
+                    className="mt-7 rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    <Trash2 className="size-4" />
+                  </button>
                 </div>
 
                 {row.directorateId ? (
@@ -145,7 +153,9 @@ export function DirectorateSection() {
                       placeholder="Pilih unit…"
                     />
                     <FieldError
-                      message={itemTouched?.units ? itemErrors?.units : undefined}
+                      message={
+                        itemTouched?.units ? itemErrors?.units : undefined
+                      }
                     />
                   </LabeledField>
                 ) : null}
