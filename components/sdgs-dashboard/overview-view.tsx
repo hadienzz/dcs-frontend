@@ -52,7 +52,7 @@ export function OverviewView() {
           hint="Belum dipublikasi ke publik"
         />
         <StatCard
-          tone="violet"
+          tone="primary"
           icon={FileText}
           label="SDGs Dipantau"
           value={17}

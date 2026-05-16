@@ -16,7 +16,7 @@ export function PublicView() {
         description="Inisiatif yang dipublikasi pada website pemeringkatan SDGs."
       />
       {isLoading ? (
-        <div className="rounded-lg border border-dashed border-border/70 p-10 text-center text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-black/[0.08] bg-white p-10 text-center text-sm text-slate-400">
           Memuat inisiatif…
         </div>
       ) : (

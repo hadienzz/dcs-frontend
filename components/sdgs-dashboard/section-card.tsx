@@ -1,13 +1,5 @@
 import type { ReactNode } from "react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 interface SectionCardProps {
   title: string;
   description?: string;
@@ -22,15 +14,17 @@ export function SectionCard({
   action,
 }: SectionCardProps) {
   return (
-    <Card className="border-border/70 shadow-sm">
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
+    <div className="rounded-xl border border-black/[0.06] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className="flex items-start justify-between gap-4 border-b border-black/[0.04] px-5 py-4">
         <div>
-          <CardTitle className="text-base">{title}</CardTitle>
-          {description ? <CardDescription>{description}</CardDescription> : null}
+          <h3 className="text-[15px] font-semibold text-slate-900">{title}</h3>
+          {description ? (
+            <p className="mt-0.5 text-sm text-slate-400">{description}</p>
+          ) : null}
         </div>
         {action}
-      </CardHeader>
-      <CardContent className="space-y-5">{children}</CardContent>
-    </Card>
+      </div>
+      <div className="space-y-4 p-5">{children}</div>
+    </div>
   );
 }

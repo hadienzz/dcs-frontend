@@ -34,7 +34,7 @@ export default function HomePage() {
       <ScrollSection y={18} duration={0.6}>
         <Footer />
       </ScrollSection>
-      <ClientOnlyWidgets />
+      {/* <ClientOnlyWidgets /> */}
     </main>
   );
 }
