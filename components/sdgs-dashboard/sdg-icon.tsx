@@ -9,14 +9,13 @@ interface SdgIconProps {
 }
 
 const sizeMap = {
-  sm: "h-7 w-7 text-[10px]",
-  md: "h-10 w-10 text-xs",
-  lg: "h-14 w-14 text-sm",
+  sm: "size-7 text-[10px]",
+  md: "size-10 text-xs",
+  lg: "size-14 text-sm",
 } as const;
 
 /**
- * Visual SDG marker — colored tile with the goal number. Replaces the
- * generic leaf icon with the recognized UN SDG color palette.
+ * Visual SDG marker — colored tile with the goal number.
  */
 export function SdgIcon({ id, size = "md", className }: SdgIconProps) {
   const sdg = sdgById.get(id);
@@ -25,7 +24,7 @@ export function SdgIcon({ id, size = "md", className }: SdgIconProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-md font-bold text-white shadow-sm shrink-0",
+        "flex shrink-0 items-center justify-center rounded-lg font-bold text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]",
         sizeMap[size],
         className,
       )}

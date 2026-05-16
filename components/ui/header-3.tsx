@@ -120,12 +120,7 @@ export function Header() {
         description: "Tonton profil singkat dan fokus inisiatif DCS.",
         icon: PlayCircle,
       },
-      {
-        title: "SDGs Hub",
-        href: "/sdgs-hub",
-        description: "Portal kolaborasi riset, inovasi, dan ide mahasiswa.",
-        icon: Rocket,
-      },
+     
       {
         title: "Explore SDGs",
         href: homeHref("sdgs-explorer"),
@@ -187,11 +182,7 @@ export function Header() {
         href: "/tentangkami",
         icon: Shield,
       },
-      {
-        title: "SDGs Hub",
-        href: "/sdgs-hub",
-        icon: Rocket,
-      },
+    
       {
         title: "Explore SDGs",
         href: homeHref("sdgs-explorer"),
@@ -363,19 +354,7 @@ export function Header() {
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link
-                    href="/sdgs-hub"
-                    className={cn(
-                      "inline-flex h-9 items-center rounded-lg px-4 py-2 text-[14px] font-medium text-foreground/60 transition-colors hover:text-foreground",
-                      isActive("/sdgs-hub") && "text-foreground",
-                    )}
-                  >
-                    SDGs Hub
-                  </Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+          
 
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>

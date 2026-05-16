@@ -22,29 +22,31 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
     >
       <Link
         href="/sdgs-dashboard"
-        className="text-muted-foreground transition-colors hover:text-foreground"
+        className="text-slate-400 transition-colors hover:text-slate-700"
         aria-label="Dashboard"
       >
-        <Home className="h-4 w-4" />
+        <Home className="size-4" />
       </Link>
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         return (
           <Fragment key={`${item.label}-${index}`}>
-            <span className="text-muted-foreground/40" aria-hidden>
+            <span className="text-slate-300" aria-hidden>
               /
             </span>
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="text-muted-foreground transition-colors hover:text-foreground"
+                className="text-slate-400 transition-colors hover:text-slate-700"
               >
                 {item.label}
               </Link>
             ) : (
               <span
                 className={cn(
-                  isLast ? "font-medium text-foreground" : "text-muted-foreground",
+                  isLast
+                    ? "font-medium text-slate-700"
+                    : "text-slate-400",
                 )}
               >
                 {item.label}

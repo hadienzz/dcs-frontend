@@ -7,7 +7,6 @@ import {
   ArrowRight,
   BarChart3,
   CalendarDays,
-  ChevronRight,
   Database,
   Layers3,
   Target,
@@ -61,22 +60,7 @@ function SdgsGoalsExplorerView({
                 tren data, program terkait, dan berita yang relevan dalam satu
                 halaman yang mudah dipindai.
               </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="#daftar-sdgs"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#b6252a] px-5 text-sm font-semibold text-white shadow-[0_18px_34px_-20px_rgba(182,37,42,0.95)] transition hover:-translate-y-0.5 hover:bg-[#9f1f25]"
-                >
-                  Lihat 17 SDG
-                  <ArrowRight className="size-4" />
-                </Link>
-                <Link
-                  href="/sdg/sdg-1-kemiskinan"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-black/10 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:border-[#b6252a]/25 hover:text-[#b6252a]"
-                >
-                  Contoh detail SDG 1
-                  <ChevronRight className="size-4" />
-                </Link>
-              </div>
+              
             </div>
 
             <div className="grid max-w-[calc(100vw-2.5rem)] grid-cols-1 gap-3 sm:max-w-none sm:grid-cols-4">
@@ -152,7 +136,7 @@ function SdgsGoalsExplorerView({
         {isLoading ? (
           <GoalsSkeleton />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {goals.map((goal, index) => (
               <SdgGoalCard key={goal.id} goal={goal} priority={index < 4} />
             ))}
@@ -167,35 +151,35 @@ function SdgGoalCard({ goal, priority }: { goal: SdgGoal; priority: boolean }) {
   return (
     <Link
       href={`/sdg/${goal.slug}`}
-      className="group relative min-h-[22rem] overflow-hidden rounded-2xl border border-white/80 bg-slate-900 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.55)] outline-none transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_-44px_rgba(15,23,42,0.7)] focus-visible:ring-2 focus-visible:ring-[#b6252a]"
+      className="group relative min-h-[10rem] overflow-hidden rounded-xl border border-white/80 bg-slate-900 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.55)] outline-none transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_-44px_rgba(15,23,42,0.7)] focus-visible:ring-2 focus-visible:ring-[#b6252a] sm:min-h-[22rem] sm:rounded-2xl"
     >
       <Image
         src={goal.imageUrl}
         alt={goal.name}
         fill
         priority={priority}
-        sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 33vw"
         className="object-cover transition duration-700 group-hover:scale-105"
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.12)_0%,rgba(15,23,42,0.36)_46%,rgba(15,23,42,0.92)_100%)]" />
       <div
-        className="absolute left-4 top-4 flex size-16 flex-col justify-center items-center rounded-2xl px-3 font-bold shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)]"
+        className="absolute left-2 top-2 flex size-9 flex-col items-center justify-center rounded-lg font-bold shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] sm:left-4 sm:top-4 sm:size-16 sm:rounded-2xl sm:px-3"
         style={{ backgroundColor: goal.color, color: goal.foreground }}
       >
-        <span className="text-3xl leading-none">{goal.id}</span>
-        <span className="text-[9px] uppercase tracking-wide">SDG</span>
+        <span className="text-base leading-none sm:text-3xl">{goal.id}</span>
+        <span className="hidden text-[9px] uppercase tracking-wide sm:block">SDG</span>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 p-5">
+      <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-5">
         <div className="transition duration-300 group-hover:-translate-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/65">
+          <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-white/65 sm:block">
             {goal.englishName}
           </p>
-          <h3 className="mt-2 break-words text-xl font-semibold leading-tight text-white sm:text-2xl">
+          <h3 className="mt-0 break-words text-xs font-semibold leading-tight text-white sm:mt-2 sm:text-xl md:text-2xl">
             {goal.name}
           </h3>
         </div>
-        <div className="grid max-h-0 translate-y-3 grid-rows-[0fr] opacity-0 transition-all duration-300 group-hover:mt-4 group-hover:max-h-52 group-hover:translate-y-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:mt-4 group-focus-visible:max-h-52 group-focus-visible:translate-y-0 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100">
+        <div className="hidden grid-rows-[0fr] opacity-0 transition-all duration-300 sm:grid sm:max-h-0 sm:translate-y-3 group-hover:sm:mt-4 group-hover:sm:max-h-52 group-hover:sm:translate-y-0 group-hover:sm:grid-rows-[1fr] group-hover:sm:opacity-100 group-focus-visible:sm:mt-4 group-focus-visible:sm:max-h-52 group-focus-visible:sm:translate-y-0 group-focus-visible:sm:grid-rows-[1fr] group-focus-visible:sm:opacity-100">
           <div className="overflow-hidden">
             <p className="text-sm leading-6 text-white/78">{goal.summary}</p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white px-4 py-2 text-sm font-semibold text-slate-950">
@@ -231,12 +215,12 @@ function ImpactMetric({
 
 function GoalsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-3 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {Array.from({ length: 8 }, (_, index) => (
         <div
           key={index}
           className={cn(
-            "min-h-[22rem] animate-pulse rounded-2xl border border-black/5 bg-white",
+            "min-h-[10rem] animate-pulse rounded-xl border border-black/5 bg-white sm:min-h-[22rem] sm:rounded-2xl",
             index % 3 === 0 && "bg-[#fff7f7]",
           )}
         />

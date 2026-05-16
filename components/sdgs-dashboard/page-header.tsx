@@ -22,11 +22,11 @@ export function PageHeader({
       ) : null}
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-[1.75rem]">
             {title}
           </h1>
           {description ? (
-            <p className="mt-1.5 text-sm text-muted-foreground md:text-base">
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
               {description}
             </p>
           ) : null}

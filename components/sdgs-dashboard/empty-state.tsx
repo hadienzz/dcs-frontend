@@ -12,13 +12,15 @@ export function EmptyState({
   icon: Icon = Inbox,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 rounded-lg border border-dashed border-border/70 bg-card/50">
-      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-        <Icon className="h-5 w-5 text-primary" />
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-black/[0.08] bg-white py-16 text-center">
+      <div className="flex size-12 items-center justify-center rounded-xl bg-slate-100 ring-1 ring-black/[0.04]">
+        <Icon className="size-5 text-slate-400" />
       </div>
-      <p className="font-medium">{title}</p>
+      <p className="mt-4 text-sm font-medium text-slate-700">{title}</p>
       {description ? (
-        <p className="text-sm text-muted-foreground mt-1 max-w-sm">{description}</p>
+        <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-slate-400">
+          {description}
+        </p>
       ) : null}
     </div>
   );

@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -42,26 +41,41 @@ export function ContentTable({ data }: ContentTableProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Inisiatif</TableHead>
-            <TableHead>SDGs</TableHead>
-            <TableHead>Direktorat</TableHead>
-            <TableHead>Status Bukti</TableHead>
-            <TableHead>Visibilitas</TableHead>
-            <TableHead className="text-right">Diunggah</TableHead>
+          <TableRow className="border-black/[0.04] hover:bg-transparent">
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Inisiatif
+            </TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              SDGs
+            </TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Direktorat
+            </TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Status
+            </TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Visibilitas
+            </TableHead>
+            <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Diunggah
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow
+              key={row.id}
+              className="border-black/[0.04] transition-colors hover:bg-slate-50/60"
+            >
               <TableCell className="max-w-xs">
-                <p className="truncate font-medium text-foreground">
+                <p className="truncate text-sm font-medium text-slate-900">
                   {row.title}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="mt-0.5 truncate text-xs text-slate-400">
                   {row.description}
                 </p>
               </TableCell>
@@ -71,30 +85,45 @@ export function ContentTable({ data }: ContentTableProps) {
                     <SdgIcon key={id} id={id} size="sm" />
                   ))}
                   {row.sdgs.length > 4 ? (
-                    <span className="text-xs text-muted-foreground self-center">
+                    <span className="self-center text-xs text-slate-400">
                       +{row.sdgs.length - 4}
                     </span>
                   ) : null}
                 </div>
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
+              <TableCell className="text-sm text-slate-500">
                 {summarizeDirectorates(row)}
               </TableCell>
               <TableCell>
-                <Badge
-                  variant={row.isAvailable === "yes" ? "success" : "neutral"}
+                <span
+                  className={
+                    row.isAvailable === "yes"
+                      ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-100/80"
+                      : "inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200/80"
+                  }
                 >
+                  <span
+                    className={
+                      row.isAvailable === "yes"
+                        ? "size-1.5 rounded-full bg-emerald-500"
+                        : "size-1.5 rounded-full bg-slate-400"
+                    }
+                  />
                   {row.isAvailable === "yes" ? "Terverifikasi" : "Draf"}
-                </Badge>
+                </span>
               </TableCell>
               <TableCell>
-                <Badge
-                  variant={row.publicVisibility === "yes" ? "default" : "outline"}
+                <span
+                  className={
+                    row.publicVisibility === "yes"
+                      ? "inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 ring-1 ring-blue-100/80"
+                      : "inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-100/80"
+                  }
                 >
                   {row.publicVisibility === "yes" ? "Publikasi" : "Internal"}
-                </Badge>
+                </span>
               </TableCell>
-              <TableCell className="text-right text-sm text-muted-foreground">
+              <TableCell className="text-right text-sm text-slate-400">
                 {dateFormatter.format(new Date(row.createdAt))}
               </TableCell>
             </TableRow>
