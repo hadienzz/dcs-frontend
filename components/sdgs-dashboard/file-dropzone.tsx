@@ -1,9 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { UploadCloud, X } from "lucide-react";
+import { FileText, UploadCloud, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface FileDropzoneProps {
@@ -14,10 +13,6 @@ interface FileDropzoneProps {
   hint?: string;
 }
 
-/**
- * Mock dropzone — only stores the filename in state since the real upload API
- * is not wired yet. UX matches the sdgs-insight reference.
- */
 export function FileDropzone({
   value,
   onChange,
@@ -54,15 +49,15 @@ export function FileDropzone({
           if (file) onChange(file.name);
         }}
         className={cn(
-          "rounded-lg border-2 border-dashed p-6 text-center transition-colors cursor-pointer",
+          "cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors",
           drag
-            ? "border-primary bg-primary/5"
-            : "border-border bg-muted/30 hover:border-primary/50",
+            ? "border-[#b6252a]/40 bg-[#b6252a]/[0.03]"
+            : "border-black/[0.08] bg-[#fafafa] hover:border-[#b6252a]/30 hover:bg-[#b6252a]/[0.02]",
         )}
       >
-        <UploadCloud className="h-6 w-6 mx-auto text-muted-foreground" />
-        <p className="text-sm font-medium mt-2">{label}</p>
-        <p className="text-xs text-muted-foreground mt-1">{hint}</p>
+        <UploadCloud className="mx-auto size-6 text-slate-400" />
+        <p className="mt-2 text-sm font-medium text-slate-700">{label}</p>
+        <p className="mt-1 text-xs text-slate-400">{hint}</p>
         <input
           ref={inputRef}
           type="file"
@@ -76,18 +71,19 @@ export function FileDropzone({
       </div>
 
       {value ? (
-        <div className="mt-2 flex items-center justify-between gap-2 rounded-md border border-border/70 bg-card px-3 py-2 text-sm">
-          <span className="truncate">{value}</span>
-          <Button
+        <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-black/[0.06] bg-white px-3 py-2.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <FileText className="size-4 shrink-0 text-slate-400" />
+            <span className="truncate text-sm text-slate-700">{value}</span>
+          </div>
+          <button
             type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
             onClick={() => onChange("")}
             aria-label="Hapus file"
+            className="shrink-0 rounded-md p-1 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X className="size-4" />
+          </button>
         </div>
       ) : null}
     </div>

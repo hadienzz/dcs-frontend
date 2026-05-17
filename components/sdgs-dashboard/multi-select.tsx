@@ -3,8 +3,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -22,11 +20,6 @@ interface MultiSelectProps {
   id?: string;
 }
 
-/**
- * Lightweight multi-select. Renders a trigger button with a search/list popout
- * and the selected items as removable chips. Built without Radix Popover so it
- * works in dcs-redesign's component set without new deps.
- */
 export function MultiSelect({
   options,
   value,
@@ -76,38 +69,41 @@ export function MultiSelect({
   return (
     <div className="space-y-2" ref={containerRef}>
       <div className="relative">
-        <Button
+        <button
           id={triggerId}
           type="button"
-          variant="outline"
-          className="w-full h-12 justify-between font-normal"
+          className="flex h-10 w-full items-center justify-between rounded-lg border border-black/[0.08] bg-white px-3 text-sm transition-colors hover:border-black/[0.12] focus:border-[#b6252a]/30 focus:outline-none focus:ring-2 focus:ring-[#b6252a]/10"
           onClick={() => setOpen((prev) => !prev)}
           aria-haspopup="listbox"
           aria-expanded={open}
         >
-          <span className={cn(selected.length === 0 && "text-muted-foreground")}>
+          <span
+            className={cn(
+              selected.length === 0 ? "text-slate-400" : "text-slate-800",
+            )}
+          >
             {selected.length ? `${selected.length} dipilih` : placeholder}
           </span>
-          <ChevronsUpDown className="h-4 w-4 opacity-50" />
-        </Button>
+          <ChevronsUpDown className="size-4 text-slate-400" />
+        </button>
 
         {open ? (
           <div
-            className="absolute z-30 mt-2 w-full rounded-xl border border-border/80 bg-popover text-popover-foreground shadow-[0_24px_60px_-32px_rgba(15,23,42,0.45)]"
+            className="absolute z-30 mt-2 w-full rounded-xl border border-black/[0.06] bg-white shadow-[0_24px_60px_-32px_rgba(15,23,42,0.3)]"
             role="listbox"
           >
-            <div className="p-2 border-b border-border/60">
+            <div className="border-b border-black/[0.04] p-2">
               <Input
                 autoFocus
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Cari…"
-                className="h-9"
+                className="h-9 border-black/[0.08] text-sm placeholder:text-slate-400"
               />
             </div>
             <ul className="max-h-64 overflow-auto p-1">
               {filtered.length === 0 ? (
-                <li className="px-3 py-6 text-center text-sm text-muted-foreground">
+                <li className="px-3 py-6 text-center text-sm text-slate-400">
                   {emptyText}
                 </li>
               ) : (
@@ -123,13 +119,13 @@ export function MultiSelect({
                         className={cn(
                           "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                           checked
-                            ? "bg-primary/10 text-primary"
-                            : "hover:bg-muted/40",
+                            ? "bg-[#b6252a]/[0.06] text-[#b6252a] font-medium"
+                            : "text-slate-700 hover:bg-slate-50",
                         )}
                       >
                         <Check
                           className={cn(
-                            "h-4 w-4",
+                            "size-4",
                             checked ? "opacity-100" : "opacity-0",
                           )}
                         />
@@ -147,17 +143,20 @@ export function MultiSelect({
       {selected.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
           {selected.map((s) => (
-            <Badge key={s.value} variant="neutral" className="gap-1 pr-1">
+            <span
+              key={s.value}
+              className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-1 pl-2.5 pr-1.5 text-[11px] font-medium text-slate-700 ring-1 ring-black/[0.04]"
+            >
               {s.label}
               <button
                 type="button"
                 onClick={() => toggle(s.value)}
-                className="rounded p-0.5 hover:bg-muted-foreground/15"
+                className="rounded-full p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700"
                 aria-label={`Hapus ${s.label}`}
               >
-                <X className="h-3 w-3" />
+                <X className="size-3" />
               </button>
-            </Badge>
+            </span>
           ))}
         </div>
       ) : null}
