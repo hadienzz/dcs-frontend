@@ -34,8 +34,8 @@ export function ContentTable({ data }: ContentTableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="Belum ada inisiatif"
-        description="Inisiatif yang Anda buat akan muncul di sini."
+        title="Belum ada dokumen"
+        description="Dokumen pemeringkatan yang Anda buat akan muncul di sini."
       />
     );
   }
@@ -46,7 +46,7 @@ export function ContentTable({ data }: ContentTableProps) {
         <TableHeader>
           <TableRow className="border-black/[0.04] hover:bg-transparent">
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Inisiatif
+              Dokumen
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-400">
               SDGs

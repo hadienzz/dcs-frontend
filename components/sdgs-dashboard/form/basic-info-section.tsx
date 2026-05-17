@@ -18,7 +18,7 @@ export function BasicInfoSection() {
   return (
     <SectionCard
       title="Informasi Dasar"
-      description="Identitas dan ringkasan inisiatif."
+      description="Identitas dan ringkasan dokumen pemeringkatan."
     >
       <LabeledField label="Nama Inisiatif" htmlFor="title">
         <Input

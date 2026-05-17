@@ -151,12 +151,12 @@ export function AccountsManagementView() {
     if (account.role === "admin") return "Akses penuh ke semua data";
     if (account.role === "directorate" && account.directorateId) {
       const dir = directorateById.get(account.directorateId);
-      return dir ? `Semua inisiatif ${dir.name}` : "Direktorat tidak ditemukan";
+      return dir ? `Semua dokumen ${dir.name}` : "Direktorat tidak ditemukan";
     }
     if (account.role === "unit" && account.directorateId && account.unitId) {
       const dir = directorateById.get(account.directorateId);
       const unit = dir?.units.find((u) => u.id === account.unitId);
-      return unit ? `Hanya inisiatif ${unit.name}` : "Unit tidak ditemukan";
+      return unit ? `Hanya dokumen ${unit.name}` : "Unit tidak ditemukan";
     }
     return "—";
   }
@@ -172,7 +172,7 @@ export function AccountsManagementView() {
       <PageHeader
         breadcrumbs={[{ label: "Akun" }]}
         title="Manajemen Akun"
-        description="Buat dan kelola akun untuk direktorat dan unit agar bisa mengakses inisiatif SDGs."
+        description="Buat dan kelola akun untuk direktorat dan unit agar bisa mengakses dokumen pemeringkatan SDGs."
         actions={
           <Button onClick={() => setModal({ type: "add" })}>
             <Plus className="size-4" />
@@ -385,7 +385,7 @@ export function AccountsManagementView() {
             <div>
               <p className="text-sm font-medium text-slate-700">Admin</p>
               <p className="text-xs text-slate-400">
-                Akses penuh ke semua inisiatif, direktorat, dan pengaturan.
+                Akses penuh ke semua dokumen, direktorat, dan pengaturan.
               </p>
             </div>
           </div>
@@ -396,7 +396,7 @@ export function AccountsManagementView() {
             <div>
               <p className="text-sm font-medium text-slate-700">Direktorat</p>
               <p className="text-xs text-slate-400">
-                Bisa melihat semua inisiatif milik direktorat tersebut dan
+                Bisa melihat semua dokumen milik direktorat tersebut dan
                 seluruh unit di bawahnya.
               </p>
             </div>
@@ -408,7 +408,7 @@ export function AccountsManagementView() {
             <div>
               <p className="text-sm font-medium text-slate-700">Unit</p>
               <p className="text-xs text-slate-400">
-                Hanya bisa mengakses inisiatif yang dimiliki unit tersebut saja.
+                Hanya bisa mengakses dokumen yang dimiliki unit tersebut saja.
               </p>
             </div>
           </div>
@@ -626,9 +626,9 @@ function AccountFormModal({
               {role === "admin" &&
                 "Akses penuh ke semua data dan pengaturan."}
               {role === "directorate" &&
-                "Bisa melihat semua inisiatif direktorat dan unit di bawahnya."}
+                "Bisa melihat semua dokumen direktorat dan unit di bawahnya."}
               {role === "unit" &&
-                "Hanya bisa mengakses inisiatif milik unit tersebut."}
+                "Hanya bisa mengakses dokumen milik unit tersebut."}
             </p>
           </div>
 

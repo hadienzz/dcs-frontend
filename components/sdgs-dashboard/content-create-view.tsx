@@ -12,11 +12,11 @@ export function ContentCreateView() {
     <>
       <PageHeader
         breadcrumbs={[
-          { label: "Inisiatif SDGs", href: "/sdgs-dashboard/content" },
-          { label: "Inisiatif Baru" },
+          { label: "Dokumen Pemeringkatan", href: "/sdgs-dashboard/content" },
+          { label: "Dokumen Baru" },
         ]}
-        title="Tambah Inisiatif SDGs"
-        description="Lengkapi form berikut untuk mendokumentasikan inisiatif keberlanjutan baru."
+        title="Tambah Dokumen Pemeringkatan"
+        description="Lengkapi form berikut untuk mendokumentasikan dokumen pemeringkatan baru."
       />
       <SdgsContentForm
         onSuccess={() => router.push("/sdgs-dashboard/content")}

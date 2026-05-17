@@ -16,7 +16,7 @@ export interface DashboardNavItem {
 
 export const dashboardNav: DashboardNavItem[] = [
   { label: "Dashboard", to: "/sdgs-dashboard", icon: LayoutDashboard },
-  { label: "Inisiatif SDGs", to: "/sdgs-dashboard/content", icon: FileText },
+  { label: "Dokumen Pemeringkatan", to: "/sdgs-dashboard/content", icon: FileText },
   { label: "SDGs & Indikator", to: "/sdgs-dashboard/sdgs", icon: Target },
   {
     label: "Direktorat",

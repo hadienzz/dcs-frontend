@@ -61,7 +61,7 @@ export function SdgsSelectionSection() {
   return (
     <SectionCard
       title="Pemetaan SDGs & Indikator"
-      description="Pilih goal SDG dan indikator spesifik yang relevan."
+      description="Pilih goal SDG dan indikator spesifik yang relevan dengan dokumen ini."
     >
       {/* Selected SDGs */}
       {values.sdgs.length > 0 && (

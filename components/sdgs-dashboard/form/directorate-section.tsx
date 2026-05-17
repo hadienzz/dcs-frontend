@@ -49,7 +49,7 @@ export function DirectorateSection() {
       {({ push, remove }) => (
         <SectionCard
           title="Direktorat & Unit"
-          description="Pilih direktorat dan unit yang bertanggung jawab atas inisiatif ini."
+          description="Pilih direktorat dan unit yang bertanggung jawab atas dokumen ini."
           action={
             <Button
               type="button"

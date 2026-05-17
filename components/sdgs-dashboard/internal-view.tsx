@@ -13,11 +13,11 @@ export function InternalView() {
       <PageHeader
         breadcrumbs={[{ label: "Draf Internal" }]}
         title="Draf Internal"
-        description="Inisiatif yang masih disiapkan tim internal sebelum dipublikasi."
+        description="Dokumen yang masih disiapkan tim internal sebelum dipublikasi."
       />
       {isLoading ? (
         <div className="rounded-xl border border-dashed border-black/[0.08] bg-white p-10 text-center text-sm text-slate-400">
-          Memuat inisiatif…
+          Memuat dokumen…
         </div>
       ) : (
         <ContentTable data={internalContents} />
