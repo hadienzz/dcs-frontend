@@ -326,7 +326,7 @@ export function ContentListView() {
           <p className="mt-1 text-xs text-slate-400">
             {searchQuery.trim()
               ? `Tidak ada hasil untuk "${searchQuery.trim()}"`
-              : "Belum ada inisiatif dengan filter ini."}
+              : "Belum ada dokumen dengan filter ini."}
           </p>
         </div>
       ) : (

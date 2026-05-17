@@ -4,7 +4,7 @@ import { AccountsManagementView } from "@/components/sdgs-dashboard/accounts-man
 
 export const metadata: Metadata = {
   title: "Manajemen Akun",
-  description: "Kelola akun direktorat dan unit untuk akses inisiatif SDGs.",
+  description: "Kelola akun direktorat dan unit untuk akses dokumen pemeringkatan SDGs.",
 };
 
 export default function Page() {

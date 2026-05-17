@@ -4,7 +4,7 @@ import { DirectoratesView } from "@/components/sdgs-dashboard/directorates-view"
 
 export const metadata: Metadata = {
   title: "Direktorat & Unit",
-  description: "Struktur direktorat Telkom University untuk inisiatif SDGs.",
+  description: "Struktur direktorat Telkom University untuk dokumen pemeringkatan SDGs.",
 };
 
 export default function Page() {
