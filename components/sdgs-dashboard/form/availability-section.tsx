@@ -129,7 +129,7 @@ export function AvailabilitySection() {
       <ToggleRow
         id="publicVisibility"
         label="Publikasikan di website pemeringkatan"
-        description="Aktifkan agar inisiatif tampil di website publik SDGs Telkom University."
+        description="Aktifkan agar dokumen tampil di website publik SDGs Telkom University."
         checked={values.publicVisibility === "yes"}
         onChange={(checked) =>
           setFieldValue("publicVisibility", checked ? "yes" : "no")

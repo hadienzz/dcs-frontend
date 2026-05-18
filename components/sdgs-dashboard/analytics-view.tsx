@@ -9,11 +9,11 @@ export function AnalyticsView() {
       <PageHeader
         breadcrumbs={[{ label: "Analitik" }]}
         title="Analitik"
-        description="Insight performa inisiatif SDGs Telkom University."
+        description="Insight performa dokumen pemeringkatan SDGs Telkom University."
       />
       <EmptyState
         title="Analitik segera hadir"
-        description="Halaman ini akan menampilkan distribusi inisiatif per SDG, kontribusi tiap direktorat, dan tren publikasi."
+        description="Halaman ini akan menampilkan distribusi dokumen per SDG, kontribusi tiap direktorat, dan tren publikasi."
         icon={BarChart3}
       />
     </>

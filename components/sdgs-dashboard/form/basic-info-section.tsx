@@ -18,9 +18,9 @@ export function BasicInfoSection() {
   return (
     <SectionCard
       title="Informasi Dasar"
-      description="Identitas dan ringkasan inisiatif."
+      description="Identitas dan ringkasan dokumen pemeringkatan."
     >
-      <LabeledField label="Nama Inisiatif" htmlFor="title">
+      <LabeledField label="Nama Dokumen" htmlFor="title">
         <Input
           id="title"
           name="title"
@@ -37,7 +37,7 @@ export function BasicInfoSection() {
           id="description"
           name="description"
           rows={4}
-          placeholder="Jelaskan tujuan, lingkup, dan dampak inisiatif ini."
+          placeholder="Jelaskan tujuan, lingkup, dan dampak dokumen ini."
           value={values.description}
           onChange={handleChange}
           onBlur={handleBlur}

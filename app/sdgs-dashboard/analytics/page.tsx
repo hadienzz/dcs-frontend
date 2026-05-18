@@ -4,7 +4,7 @@ import { AnalyticsView } from "@/components/sdgs-dashboard/analytics-view";
 
 export const metadata: Metadata = {
   title: "Analitik SDGs",
-  description: "Insight performa inisiatif SDGs Telkom University.",
+  description: "Insight performa dokumen pemeringkatan SDGs Telkom University.",
 };
 
 export default function Page() {

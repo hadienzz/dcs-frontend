@@ -18,12 +18,12 @@ export function OverviewView() {
       <PageHeader
         breadcrumbs={[{ label: "Dashboard" }]}
         title="Selamat datang di Dashboard SDGs"
-        description="Pantau dan kelola inisiatif keberlanjutan Telkom University untuk pemeringkatan SDGs."
+        description="Pantau dan kelola dokumen pemeringkatan keberlanjutan Telkom University."
         actions={
           <Button asChild>
             <Link href="/sdgs-dashboard/content/new">
               <Plus className="h-4 w-4" />
-              Inisiatif baru
+              Dokumen baru
             </Link>
           </Button>
         }
@@ -33,7 +33,7 @@ export function OverviewView() {
         <StatCard
           tone="blue"
           icon={Layers}
-          label="Total Inisiatif"
+          label="Total Dokumen"
           value={all.length}
           hint={`${publicContents.length} dipublikasi · ${internalContents.length} draf`}
         />
@@ -62,21 +62,21 @@ export function OverviewView() {
 
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         <ContentSummaryList
-          title="Inisiatif Terbaru"
+          title="Dokumen Terbaru"
           emptyText={
             isLoading
-              ? "Memuat inisiatif…"
-              : "Belum ada inisiatif. Mulai dengan menambah inisiatif baru."
+              ? "Memuat dokumen…"
+              : "Belum ada dokumen. Mulai dengan menambah dokumen baru."
           }
           items={all}
           viewAllHref="/sdgs-dashboard/content"
         />
         <ContentSummaryList
-          title="Inisiatif Dipublikasi"
+          title="Dokumen Dipublikasi"
           emptyText={
             isLoading
-              ? "Memuat inisiatif…"
-              : "Belum ada inisiatif yang dipublikasi."
+              ? "Memuat dokumen…"
+              : "Belum ada dokumen yang dipublikasi."
           }
           items={publicContents}
           viewAllHref="/sdgs-dashboard/public"

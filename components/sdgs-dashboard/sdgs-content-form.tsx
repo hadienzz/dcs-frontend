@@ -40,12 +40,12 @@ export function SdgsContentForm({ onSuccess, onCancel }: SdgsContentFormProps) {
       onSubmit={(values, helpers) =>
         mutateAsync(values).then(
           () => {
-            toast.success("Inisiatif berhasil disimpan.");
+            toast.success("Dokumen berhasil disimpan.");
             helpers.resetForm();
             onSuccess?.();
           },
           (error) => {
-            toast.error(getErrorMessage(error, "Gagal menyimpan inisiatif."));
+            toast.error(getErrorMessage(error, "Gagal menyimpan dokumen."));
           },
         )
       }
@@ -87,7 +87,7 @@ function FormContent({
             </Button>
           ) : null}
           <Button type="submit" disabled={isPending} className="text-sm">
-            {isPending ? "Menyimpan…" : "Simpan inisiatif"}
+            {isPending ? "Menyimpan…" : "Simpan dokumen"}
           </Button>
         </div>
       </Form>

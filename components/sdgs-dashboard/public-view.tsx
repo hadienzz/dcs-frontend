@@ -13,11 +13,11 @@ export function PublicView() {
       <PageHeader
         breadcrumbs={[{ label: "Publikasi" }]}
         title="Publikasi"
-        description="Inisiatif yang dipublikasi pada website pemeringkatan SDGs."
+        description="Dokumen pemeringkatan yang dipublikasi pada website SDGs."
       />
       {isLoading ? (
         <div className="rounded-xl border border-dashed border-black/[0.08] bg-white p-10 text-center text-sm text-slate-400">
-          Memuat inisiatif…
+          Memuat dokumen…
         </div>
       ) : (
         <ContentTable data={publicContents} />
