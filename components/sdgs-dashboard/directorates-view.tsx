@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
+  AlertCircle,
   Building2,
   ChevronDown,
   ChevronRight,
   Edit2,
   Layers,
+  Loader2,
   Plus,
   Trash2,
   X,
@@ -14,285 +16,38 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { directorateFields as initialFields } from "@/lib/sdgs-dashboard-data";
-import type { Directorate, DirectorateField, Unit } from "@/types/sdgs-dashboard";
+import { DirectorateDeleteDialog } from "@/components/sdgs-dashboard/directorate-delete-dialog";
+import {
+  type DirectorateModalMode,
+  type DirectorateModalSubmitValues,
+  useDirectoratesManagement,
+} from "@/hooks/sdgs-dashboard/use-directorates-management";
+import type { DirectorateField } from "@/types/sdgs-dashboard";
+import { getErrorMessage } from "@/utils/api-error";
 
 import { PageHeader } from "./page-header";
 
-// Generate simple unique IDs for new items
-function uid() {
-  return `new-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-type ModalMode =
-  | { type: "add-field" }
-  | { type: "edit-field"; field: DirectorateField }
-  | { type: "add-directorate"; fieldId: string }
-  | { type: "edit-directorate"; fieldId: string; directorate: Directorate }
-  | { type: "add-unit"; fieldId: string; directorateId: string }
-  | { type: "edit-unit"; fieldId: string; directorateId: string; unit: Unit }
-  | null;
-
 export function DirectoratesView() {
-  const [fields, setFields] = useState<DirectorateField[]>(initialFields);
-  const [modal, setModal] = useState<ModalMode>(null);
-  const [expandedFields, setExpandedFields] = useState<Set<string>>(
-    () => new Set(initialFields.map((f) => f.id)),
-  );
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
-
-  // --- Field CRUD ---
-  const addField = useCallback((name: string) => {
-    setFields((prev) => [...prev, { id: uid(), name, directorates: [] }]);
-  }, []);
-
-  const editField = useCallback((id: string, name: string) => {
-    setFields((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, name } : f)),
-    );
-  }, []);
-
-  const deleteField = useCallback((id: string) => {
-    setFields((prev) => prev.filter((f) => f.id !== id));
-    setExpandedFields((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
-  }, []);
-
-  // --- Directorate CRUD ---
-  const addDirectorate = useCallback(
-    (fieldId: string, name: string) => {
-      setFields((prev) =>
-        prev.map((f) =>
-          f.id === fieldId
-            ? {
-                ...f,
-                directorates: [
-                  ...f.directorates,
-                  { id: uid(), name, units: [] },
-                ],
-              }
-            : f,
-        ),
-      );
-    },
-    [],
-  );
-
-  const editDirectorate = useCallback(
-    (fieldId: string, dirId: string, name: string) => {
-      setFields((prev) =>
-        prev.map((f) =>
-          f.id === fieldId
-            ? {
-                ...f,
-                directorates: f.directorates.map((d) =>
-                  d.id === dirId ? { ...d, name } : d,
-                ),
-              }
-            : f,
-        ),
-      );
-    },
-    [],
-  );
-
-  const deleteDirectorate = useCallback(
-    (fieldId: string, dirId: string) => {
-      setFields((prev) =>
-        prev.map((f) =>
-          f.id === fieldId
-            ? {
-                ...f,
-                directorates: f.directorates.filter((d) => d.id !== dirId),
-              }
-            : f,
-        ),
-      );
-    },
-    [],
-  );
-
-  const moveDirectorate = useCallback(
-    (dirId: string, fromFieldId: string, toFieldId: string) => {
-      setFields((prev) => {
-        const fromField = prev.find((f) => f.id === fromFieldId);
-        const dir = fromField?.directorates.find((d) => d.id === dirId);
-        if (!dir) return prev;
-        return prev.map((f) => {
-          if (f.id === fromFieldId) {
-            return {
-              ...f,
-              directorates: f.directorates.filter((d) => d.id !== dirId),
-            };
-          }
-          if (f.id === toFieldId) {
-            return { ...f, directorates: [...f.directorates, dir] };
-          }
-          return f;
-        });
-      });
-    },
-    [],
-  );
-
-  // --- Unit CRUD ---
-  const addUnit = useCallback(
-    (fieldId: string, dirId: string, name: string) => {
-      setFields((prev) =>
-        prev.map((f) =>
-          f.id === fieldId
-            ? {
-                ...f,
-                directorates: f.directorates.map((d) =>
-                  d.id === dirId
-                    ? { ...d, units: [...d.units, { id: uid(), name }] }
-                    : d,
-                ),
-              }
-            : f,
-        ),
-      );
-    },
-    [],
-  );
-
-  const editUnit = useCallback(
-    (fieldId: string, dirId: string, unitId: string, name: string) => {
-      setFields((prev) =>
-        prev.map((f) =>
-          f.id === fieldId
-            ? {
-                ...f,
-                directorates: f.directorates.map((d) =>
-                  d.id === dirId
-                    ? {
-                        ...d,
-                        units: d.units.map((u) =>
-                          u.id === unitId ? { ...u, name } : u,
-                        ),
-                      }
-                    : d,
-                ),
-              }
-            : f,
-        ),
-      );
-    },
-    [],
-  );
-
-  const deleteUnit = useCallback(
-    (fieldId: string, dirId: string, unitId: string) => {
-      setFields((prev) =>
-        prev.map((f) =>
-          f.id === fieldId
-            ? {
-                ...f,
-                directorates: f.directorates.map((d) =>
-                  d.id === dirId
-                    ? { ...d, units: d.units.filter((u) => u.id !== unitId) }
-                    : d,
-                ),
-              }
-            : f,
-        ),
-      );
-    },
-    [],
-  );
-
-  const moveUnit = useCallback(
-    (
-      unitId: string,
-      fromFieldId: string,
-      fromDirId: string,
-      toFieldId: string,
-      toDirId: string,
-    ) => {
-      setFields((prev) => {
-        const fromField = prev.find((f) => f.id === fromFieldId);
-        const fromDir = fromField?.directorates.find(
-          (d) => d.id === fromDirId,
-        );
-        const unit = fromDir?.units.find((u) => u.id === unitId);
-        if (!unit) return prev;
-        return prev.map((f) => {
-          if (f.id === fromFieldId && f.id === toFieldId) {
-            return {
-              ...f,
-              directorates: f.directorates.map((d) => {
-                if (d.id === fromDirId && d.id !== toDirId) {
-                  return { ...d, units: d.units.filter((u) => u.id !== unitId) };
-                }
-                if (d.id === toDirId && d.id !== fromDirId) {
-                  return { ...d, units: [...d.units, unit] };
-                }
-                if (d.id === fromDirId && d.id === toDirId) return d;
-                return d;
-              }),
-            };
-          }
-          if (f.id === fromFieldId) {
-            return {
-              ...f,
-              directorates: f.directorates.map((d) =>
-                d.id === fromDirId
-                  ? { ...d, units: d.units.filter((u) => u.id !== unitId) }
-                  : d,
-              ),
-            };
-          }
-          if (f.id === toFieldId) {
-            return {
-              ...f,
-              directorates: f.directorates.map((d) =>
-                d.id === toDirId ? { ...d, units: [...d.units, unit] } : d,
-              ),
-            };
-          }
-          return f;
-        });
-      });
-    },
-    [],
-  );
-
-  // --- Toggle helpers ---
-  const toggleField = (id: string) => {
-    setExpandedFields((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleDir = (id: string) => {
-    setExpandedDirs((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  // --- Stats ---
-  const stats = useMemo(() => {
-    const totalDirs = fields.reduce(
-      (acc, f) => acc + f.directorates.length,
-      0,
-    );
-    const totalUnits = fields.reduce(
-      (acc, f) =>
-        acc + f.directorates.reduce((a, d) => a + d.units.length, 0),
-      0,
-    );
-    return { fields: fields.length, directorates: totalDirs, units: totalUnits };
-  }, [fields]);
+  const {
+    fields,
+    stats,
+    modal,
+    setModal,
+    expandedFields,
+    expandedDirs,
+    isError,
+    error,
+    isSaving,
+    isDeleting,
+    pendingDeleteTarget,
+    toggleField,
+    toggleDir,
+    submitModal,
+    requestDeleteField,
+    requestDeleteDirectorate,
+    requestDeleteUnit,
+    deleteDialogActions,
+  } = useDirectoratesManagement();
 
   return (
     <>
@@ -301,59 +56,66 @@ export function DirectoratesView() {
         title="Direktorat & Unit"
         description="Kelola struktur bidang, direktorat, dan unit pendukung."
         actions={
-          <Button onClick={() => setModal({ type: "add-field" })}>
-            <Plus className="size-4" />
+          <Button
+            type="button"
+            onClick={() => setModal({ type: "add-field" })}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : (
+              <Plus className="size-4" />
+            )}
             Tambah Bidang
           </Button>
         }
       />
 
-      {/* Stats row */}
+      {isError ? (
+        <div className="mb-5 flex gap-3 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <p className="leading-6">
+            {getErrorMessage(error, "Data direktorat belum bisa dimuat.")}
+          </p>
+        </div>
+      ) : null}
+
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="flex items-center gap-3 rounded-xl border border-black/[0.06] bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-violet-50 ring-1 ring-violet-100/60">
-            <Layers className="size-4 text-violet-600" />
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-slate-900">{stats.fields}</p>
-            <p className="text-xs text-slate-400">Bidang</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 rounded-xl border border-black/[0.06] bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-blue-50 ring-1 ring-blue-100/60">
-            <Building2 className="size-4 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-slate-900">{stats.directorates}</p>
-            <p className="text-xs text-slate-400">Direktorat</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 rounded-xl border border-black/[0.06] bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-50 ring-1 ring-emerald-100/60">
-            <Building2 className="size-4 text-emerald-600" />
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-slate-900">{stats.units}</p>
-            <p className="text-xs text-slate-400">Unit</p>
-          </div>
-        </div>
+        <StatTile
+          icon={Layers}
+          value={stats.fields}
+          label="Bidang"
+          tone="primary"
+        />
+        <StatTile
+          icon={Building2}
+          value={stats.directorates}
+          label="Direktorat"
+          tone="secondary"
+        />
+        <StatTile
+          icon={Building2}
+          value={stats.units}
+          label="Unit"
+          tone="muted"
+        />
       </div>
 
-      {/* Fields list */}
       <div className="space-y-4">
         {fields.map((field) => {
           const isExpanded = expandedFields.has(field.id);
+
           return (
-            <div
+            <section
               key={field.id}
               className="rounded-xl border border-black/[0.06] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
             >
-              {/* Field header */}
               <div className="flex items-center gap-3 px-5 py-4">
                 <button
                   type="button"
                   onClick={() => toggleField(field.id)}
                   className="flex size-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                  aria-label={isExpanded ? "Tutup bidang" : "Buka bidang"}
                 >
                   {isExpanded ? (
                     <ChevronDown className="size-4" />
@@ -373,63 +135,55 @@ export function DirectoratesView() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button
-                    type="button"
+                  <IconButton
+                    label="Tambah Direktorat"
                     onClick={() =>
                       setModal({ type: "add-directorate", fieldId: field.id })
                     }
-                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700"
-                    title="Tambah Direktorat"
                   >
                     <Plus className="size-4" />
-                  </button>
-                  <button
-                    type="button"
+                  </IconButton>
+                  <IconButton
+                    label="Edit Bidang"
                     onClick={() => setModal({ type: "edit-field", field })}
-                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700"
-                    title="Edit Bidang"
                   >
                     <Edit2 className="size-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (
-                        field.directorates.length > 0 &&
-                        !confirm(
-                          `Hapus bidang "${field.name}" beserta ${field.directorates.length} direktorat di dalamnya?`,
-                        )
-                      )
-                        return;
-                      deleteField(field.id);
-                    }}
-                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                    title="Hapus Bidang"
+                  </IconButton>
+                  <IconButton
+                    label="Hapus Bidang"
+                    tone="danger"
+                    onClick={() => requestDeleteField(field)}
                   >
                     <Trash2 className="size-3.5" />
-                  </button>
+                  </IconButton>
                 </div>
               </div>
 
-              {/* Directorates */}
-              {isExpanded && field.directorates.length > 0 && (
+              {isExpanded && field.directorates.length > 0 ? (
                 <div className="border-t border-black/[0.04] px-5 py-3">
                   <div className="space-y-2">
-                    {field.directorates.map((dir) => {
-                      const dirExpanded = expandedDirs.has(dir.id);
+                    {field.directorates.map((directorate) => {
+                      const directorateExpanded = expandedDirs.has(
+                        directorate.id,
+                      );
+
                       return (
                         <div
-                          key={dir.id}
+                          key={directorate.id}
                           className="rounded-lg border border-black/[0.04] bg-[#fafafa]"
                         >
-                          {/* Directorate header */}
                           <div className="flex items-center gap-2.5 px-4 py-3">
                             <button
                               type="button"
-                              onClick={() => toggleDir(dir.id)}
+                              onClick={() => toggleDir(directorate.id)}
                               className="flex size-6 shrink-0 items-center justify-center rounded text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
+                              aria-label={
+                                directorateExpanded
+                                  ? "Tutup direktorat"
+                                  : "Buka direktorat"
+                              }
                             >
-                              {dirExpanded ? (
+                              {directorateExpanded ? (
                                 <ChevronDown className="size-3.5" />
                               ) : (
                                 <ChevronRight className="size-3.5" />
@@ -440,66 +194,56 @@ export function DirectoratesView() {
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-[13px] font-medium text-slate-800">
-                                {dir.name}
+                                {directorate.name}
                               </p>
                               <p className="text-[11px] text-slate-400">
-                                {dir.units.length} unit
+                                {directorate.units.length} unit
                               </p>
                             </div>
                             <div className="flex items-center gap-0.5">
-                              <button
-                                type="button"
+                              <IconButton
+                                label="Tambah Unit"
+                                size="sm"
                                 onClick={() =>
                                   setModal({
                                     type: "add-unit",
                                     fieldId: field.id,
-                                    directorateId: dir.id,
+                                    directorateId: directorate.id,
                                   })
                                 }
-                                className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
-                                title="Tambah Unit"
                               >
                                 <Plus className="size-3.5" />
-                              </button>
-                              <button
-                                type="button"
+                              </IconButton>
+                              <IconButton
+                                label="Edit Direktorat"
+                                size="sm"
                                 onClick={() =>
                                   setModal({
                                     type: "edit-directorate",
                                     fieldId: field.id,
-                                    directorate: dir,
+                                    directorate,
                                   })
                                 }
-                                className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
-                                title="Edit Direktorat"
                               >
                                 <Edit2 className="size-3" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (
-                                    dir.units.length > 0 &&
-                                    !confirm(
-                                      `Hapus direktorat "${dir.name}" beserta ${dir.units.length} unit?`,
-                                    )
-                                  )
-                                    return;
-                                  deleteDirectorate(field.id, dir.id);
-                                }}
-                                className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                                title="Hapus Direktorat"
+                              </IconButton>
+                              <IconButton
+                                label="Hapus Direktorat"
+                                size="sm"
+                                tone="danger"
+                                onClick={() =>
+                                  requestDeleteDirectorate(field, directorate)
+                                }
                               >
                                 <Trash2 className="size-3" />
-                              </button>
+                              </IconButton>
                             </div>
                           </div>
 
-                          {/* Units */}
-                          {dirExpanded && dir.units.length > 0 && (
+                          {directorateExpanded && directorate.units.length > 0 ? (
                             <div className="border-t border-black/[0.04] px-4 py-2">
                               <div className="space-y-1">
-                                {dir.units.map((unit) => (
+                                {directorate.units.map((unit) => (
                                   <div
                                     key={unit.id}
                                     className="group flex items-center gap-2.5 rounded-md px-3 py-2 transition-colors hover:bg-white"
@@ -508,39 +252,44 @@ export function DirectoratesView() {
                                     <span className="min-w-0 flex-1 truncate text-[13px] text-slate-600">
                                       {unit.name}
                                     </span>
-                                    <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                      <button
-                                        type="button"
+                                    <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                                      <IconButton
+                                        label="Edit Unit"
+                                        size="xs"
                                         onClick={() =>
                                           setModal({
                                             type: "edit-unit",
                                             fieldId: field.id,
-                                            directorateId: dir.id,
+                                            directorateId: directorate.id,
                                             unit,
                                           })
                                         }
-                                        className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                                        title="Edit Unit"
                                       >
                                         <Edit2 className="size-3" />
-                                      </button>
-                                      <button
-                                        type="button"
+                                      </IconButton>
+                                      <IconButton
+                                        label="Hapus Unit"
+                                        size="xs"
+                                        tone="danger"
                                         onClick={() =>
-                                          deleteUnit(field.id, dir.id, unit.id)
+                                          requestDeleteUnit(
+                                            field,
+                                            directorate,
+                                            unit,
+                                          )
                                         }
-                                        className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                                        title="Hapus Unit"
                                       >
                                         <Trash2 className="size-3" />
-                                      </button>
+                                      </IconButton>
                                     </div>
                                   </div>
                                 ))}
                               </div>
                             </div>
-                          )}
-                          {dirExpanded && dir.units.length === 0 && (
+                          ) : null}
+
+                          {directorateExpanded &&
+                          directorate.units.length === 0 ? (
                             <div className="border-t border-black/[0.04] px-4 py-3">
                               <p className="text-center text-xs text-slate-400">
                                 Belum ada unit.{" "}
@@ -550,7 +299,7 @@ export function DirectoratesView() {
                                     setModal({
                                       type: "add-unit",
                                       fieldId: field.id,
-                                      directorateId: dir.id,
+                                      directorateId: directorate.id,
                                     })
                                   }
                                   className="font-medium text-[#b6252a] hover:underline"
@@ -559,15 +308,15 @@ export function DirectoratesView() {
                                 </button>
                               </p>
                             </div>
-                          )}
+                          ) : null}
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              )}
+              ) : null}
 
-              {isExpanded && field.directorates.length === 0 && (
+              {isExpanded && field.directorates.length === 0 ? (
                 <div className="border-t border-black/[0.04] px-5 py-6 text-center">
                   <p className="text-sm text-slate-400">
                     Belum ada direktorat.{" "}
@@ -582,65 +331,126 @@ export function DirectoratesView() {
                     </button>
                   </p>
                 </div>
-              )}
-            </div>
+              ) : null}
+            </section>
           );
         })}
       </div>
 
-      {/* Modal */}
-      {modal && (
+      {fields.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-black/[0.08] bg-white px-6 py-10 text-center">
+          <p className="text-sm font-medium text-slate-700">
+            Struktur direktorat masih kosong.
+          </p>
+          <p className="mt-1 text-sm text-slate-400">
+            Tambah bidang pertama untuk mulai menyusun struktur SDGs Dashboard.
+          </p>
+        </div>
+      ) : null}
+
+      {modal ? (
         <FormModal
           mode={modal}
           fields={fields}
+          isSubmitting={isSaving}
           onClose={() => setModal(null)}
-          onAddField={addField}
-          onEditField={editField}
-          onAddDirectorate={addDirectorate}
-          onEditDirectorate={editDirectorate}
-          onMoveDirectorate={moveDirectorate}
-          onAddUnit={addUnit}
-          onEditUnit={editUnit}
-          onMoveUnit={moveUnit}
+          onSubmit={submitModal}
         />
-      )}
+      ) : null}
+
+      <DirectorateDeleteDialog
+        target={pendingDeleteTarget}
+        open={Boolean(pendingDeleteTarget)}
+        isDeleting={isDeleting}
+        onOpenChange={deleteDialogActions.onOpenChange}
+        onConfirm={deleteDialogActions.onConfirm}
+      />
     </>
   );
 }
 
-// --- Form Modal ---
+type StatTone = "primary" | "secondary" | "muted";
+
+function StatTile({
+  icon: Icon,
+  value,
+  label,
+  tone,
+}: {
+  icon: typeof Layers;
+  value: number;
+  label: string;
+  tone: StatTone;
+}) {
+  const toneClassName =
+    tone === "primary"
+      ? "bg-violet-50 ring-violet-100/60 text-violet-600"
+      : tone === "secondary"
+        ? "bg-blue-50 ring-blue-100/60 text-blue-600"
+        : "bg-emerald-50 ring-emerald-100/60 text-emerald-600";
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-black/[0.06] bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div
+        className={`flex size-9 items-center justify-center rounded-lg ring-1 ${toneClassName}`}
+      >
+        <Icon className="size-4" />
+      </div>
+      <div>
+        <p className="text-lg font-semibold text-slate-900">{value}</p>
+        <p className="text-xs text-slate-400">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function IconButton({
+  label,
+  tone = "default",
+  size = "default",
+  onClick,
+  children,
+}: {
+  label: string;
+  tone?: "default" | "danger";
+  size?: "default" | "sm" | "xs";
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  const sizeClassName =
+    size === "xs" ? "p-1" : size === "sm" ? "p-1.5" : "p-2";
+  const toneClassName =
+    tone === "danger"
+      ? "text-slate-400 hover:bg-red-50 hover:text-red-600"
+      : "text-slate-400 hover:bg-slate-50 hover:text-slate-700";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className={`rounded-lg transition-colors ${sizeClassName} ${toneClassName}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 interface FormModalProps {
-  mode: NonNullable<ModalMode>;
+  mode: NonNullable<DirectorateModalMode>;
   fields: DirectorateField[];
+  isSubmitting: boolean;
   onClose: () => void;
-  onAddField: (name: string) => void;
-  onEditField: (id: string, name: string) => void;
-  onAddDirectorate: (fieldId: string, name: string) => void;
-  onEditDirectorate: (fieldId: string, dirId: string, name: string) => void;
-  onMoveDirectorate: (dirId: string, fromFieldId: string, toFieldId: string) => void;
-  onAddUnit: (fieldId: string, dirId: string, name: string) => void;
-  onEditUnit: (fieldId: string, dirId: string, unitId: string, name: string) => void;
-  onMoveUnit: (
-    unitId: string,
-    fromFieldId: string,
-    fromDirId: string,
-    toFieldId: string,
-    toDirId: string,
-  ) => void;
+  onSubmit: (values: DirectorateModalSubmitValues) => void;
 }
 
 function FormModal({
   mode,
   fields,
+  isSubmitting,
   onClose,
-  onAddField,
-  onEditField,
-  onAddDirectorate,
-  onEditDirectorate,
-  onMoveDirectorate,
-  onAddUnit,
-  onEditUnit,
-  onMoveUnit,
+  onSubmit,
 }: FormModalProps) {
   const [name, setName] = useState(() => {
     if (mode.type === "edit-field") return mode.field.name;
@@ -660,135 +470,103 @@ function FormModal({
   const [selectedDirId, setSelectedDirId] = useState(() => {
     if (mode.type === "add-unit") return mode.directorateId;
     if (mode.type === "edit-unit") return mode.directorateId;
-    return "";
+    const selectedField = fields.find((field) => field.id === selectedFieldId);
+    return selectedField?.directorates[0]?.id ?? "";
   });
 
-  // Available directorates based on selected field
   const availableDirs = useMemo(() => {
-    const field = fields.find((f) => f.id === selectedFieldId);
+    const field = fields.find((item) => item.id === selectedFieldId);
     return field?.directorates ?? [];
   }, [fields, selectedFieldId]);
-
-  // Reset dir selection when field changes (for unit forms)
-  const handleFieldChange = (newFieldId: string) => {
-    setSelectedFieldId(newFieldId);
-    const field = fields.find((f) => f.id === newFieldId);
-    setSelectedDirId(field?.directorates[0]?.id ?? "");
-  };
-
-  const title = (() => {
-    switch (mode.type) {
-      case "add-field": return "Tambah Bidang Baru";
-      case "edit-field": return "Edit Bidang";
-      case "add-directorate": return "Tambah Direktorat Baru";
-      case "edit-directorate": return "Edit Direktorat";
-      case "add-unit": return "Tambah Unit Baru";
-      case "edit-unit": return "Edit Unit";
-    }
-  })();
-
-  const handleSubmit = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-
-    switch (mode.type) {
-      case "add-field":
-        onAddField(trimmed);
-        break;
-      case "edit-field":
-        onEditField(mode.field.id, trimmed);
-        break;
-      case "add-directorate":
-        onAddDirectorate(selectedFieldId, trimmed);
-        break;
-      case "edit-directorate":
-        onEditDirectorate(mode.fieldId, mode.directorate.id, trimmed);
-        // Move if field changed
-        if (selectedFieldId !== mode.fieldId) {
-          onMoveDirectorate(mode.directorate.id, mode.fieldId, selectedFieldId);
-        }
-        break;
-      case "add-unit":
-        onAddUnit(selectedFieldId, selectedDirId, trimmed);
-        break;
-      case "edit-unit":
-        onEditUnit(mode.fieldId, mode.directorateId, mode.unit.id, trimmed);
-        // Move if directorate or field changed
-        if (
-          selectedFieldId !== mode.fieldId ||
-          selectedDirId !== mode.directorateId
-        ) {
-          onMoveUnit(
-            mode.unit.id,
-            mode.fieldId,
-            mode.directorateId,
-            selectedFieldId,
-            selectedDirId,
-          );
-        }
-        break;
-    }
-    onClose();
-  };
 
   const showFieldSelect =
     mode.type === "add-directorate" ||
     mode.type === "edit-directorate" ||
     mode.type === "add-unit" ||
     mode.type === "edit-unit";
-
   const showDirSelect = mode.type === "add-unit" || mode.type === "edit-unit";
 
+  const title = getModalTitle(mode);
+  const canSubmit =
+    Boolean(name.trim()) &&
+    (!showDirSelect || (availableDirs.length > 0 && Boolean(selectedDirId))) &&
+    !isSubmitting;
+
+  function handleFieldChange(newFieldId: string) {
+    setSelectedFieldId(newFieldId);
+    const field = fields.find((item) => item.id === newFieldId);
+    setSelectedDirId(field?.directorates[0]?.id ?? "");
+  }
+
+  function handleSubmit() {
+    const trimmed = name.trim();
+
+    if (!trimmed || !canSubmit) {
+      return;
+    }
+
+    onSubmit({
+      name: trimmed,
+      fieldId: selectedFieldId,
+      directorateId: selectedDirId,
+    });
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={isSubmitting ? undefined : onClose}
       />
-      {/* Panel */}
       <div className="relative w-full max-w-md rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_32px_80px_-32px_rgba(0,0,0,0.2)]">
-        {/* Close */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          disabled={isSubmitting}
+          className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:pointer-events-none disabled:opacity-50"
+          aria-label="Tutup modal"
         >
           <X className="size-4" />
         </button>
 
         <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm leading-6 text-slate-400">
           {mode.type.startsWith("add")
-            ? "Isi nama untuk menambahkan item baru."
-            : "Ubah nama atau pindahkan ke lokasi lain."}
+            ? "Isi nama untuk menambahkan item ke struktur direktorat."
+            : "Ubah nama atau pindahkan item ke lokasi lain."}
         </p>
 
         <div className="mt-5 space-y-4">
-          {/* Field selector */}
-          {showFieldSelect && (
+          {showFieldSelect ? (
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-600">
+              <label
+                htmlFor="directorate-field"
+                className="mb-1.5 block text-xs font-medium text-slate-600"
+              >
                 Bidang
               </label>
               <select
+                id="directorate-field"
                 value={selectedFieldId}
-                onChange={(e) => handleFieldChange(e.target.value)}
-                className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#b6252a]/30 focus:ring-2 focus:ring-[#b6252a]/10"
+                onChange={(event) => handleFieldChange(event.target.value)}
+                disabled={isSubmitting}
+                className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#b6252a]/30 focus:ring-2 focus:ring-[#b6252a]/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {fields.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
+                {fields.map((field) => (
+                  <option key={field.id} value={field.id}>
+                    {field.name}
                   </option>
                 ))}
               </select>
             </div>
-          )}
+          ) : null}
 
-          {/* Directorate selector */}
-          {showDirSelect && (
+          {showDirSelect ? (
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-600">
+              <label
+                htmlFor="directorate-parent"
+                className="mb-1.5 block text-xs font-medium text-slate-600"
+              >
                 Direktorat
               </label>
               {availableDirs.length === 0 ? (
@@ -797,61 +575,82 @@ function FormModal({
                 </p>
               ) : (
                 <select
+                  id="directorate-parent"
                   value={selectedDirId}
-                  onChange={(e) => setSelectedDirId(e.target.value)}
-                  className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#b6252a]/30 focus:ring-2 focus:ring-[#b6252a]/10"
+                  onChange={(event) => setSelectedDirId(event.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#b6252a]/30 focus:ring-2 focus:ring-[#b6252a]/10 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {availableDirs.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
+                  {availableDirs.map((directorate) => (
+                    <option key={directorate.id} value={directorate.id}>
+                      {directorate.name}
                     </option>
                   ))}
                 </select>
               )}
             </div>
-          )}
+          ) : null}
 
-          {/* Name input */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-slate-600">
+            <label
+              htmlFor="directorate-name"
+              className="mb-1.5 block text-xs font-medium text-slate-600"
+            >
               Nama
             </label>
             <Input
+              id="directorate-name"
               autoFocus
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSubmit();
+              onChange={(event) => setName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") handleSubmit();
               }}
-              placeholder={
-                mode.type.includes("field")
-                  ? "Nama bidang..."
-                  : mode.type.includes("directorate")
-                    ? "Nama direktorat..."
-                    : "Nama unit..."
-              }
+              disabled={isSubmitting}
+              placeholder={getModalPlaceholder(mode)}
               className="border-black/[0.08] text-sm placeholder:text-slate-400 focus-visible:ring-[#b6252a]/20"
             />
           </div>
         </div>
 
-        {/* Actions */}
         <div className="mt-6 flex items-center justify-end gap-2">
-          <Button variant="outline" onClick={onClose} className="text-sm">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="text-sm"
+          >
             Batal
           </Button>
           <Button
+            type="button"
             onClick={handleSubmit}
-            disabled={
-              !name.trim() ||
-              (showDirSelect && !selectedDirId && availableDirs.length > 0)
-            }
+            disabled={!canSubmit}
             className="text-sm"
           >
+            {isSubmitting ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : null}
             {mode.type.startsWith("add") ? "Tambah" : "Simpan"}
           </Button>
         </div>
       </div>
     </div>
   );
+}
+
+function getModalTitle(mode: NonNullable<DirectorateModalMode>) {
+  if (mode.type === "add-field") return "Tambah Bidang Baru";
+  if (mode.type === "edit-field") return "Edit Bidang";
+  if (mode.type === "add-directorate") return "Tambah Direktorat Baru";
+  if (mode.type === "edit-directorate") return "Edit Direktorat";
+  if (mode.type === "add-unit") return "Tambah Unit Baru";
+  return "Edit Unit";
+}
+
+function getModalPlaceholder(mode: NonNullable<DirectorateModalMode>) {
+  if (mode.type.includes("field")) return "Nama bidang";
+  if (mode.type.includes("directorate")) return "Nama direktorat";
+  return "Nama unit";
 }

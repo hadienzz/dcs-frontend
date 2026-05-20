@@ -68,7 +68,7 @@ export const sdgsContentService = {
       description: values.description,
       thumbnailName: values.thumbnailName || undefined,
       attachmentName: values.attachmentName || undefined,
-      sdgs: values.sdgs,
+      sdgs: values.sdgs.map((selection) => selection.sdgId),
       isAvailable: values.isAvailable,
       publicVisibility: values.publicVisibility,
       evidenceDescription: values.evidenceDescription || undefined,
